@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração Inicial - SupportingBases</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div id="main-container" class="setup-container" style="display: none;">
+        <div id="auth-loader">Carregando seus dados...</div>
+
+        <div id="profile-selection-step">
+            <h1>Configuração da Conta</h1>
+            <p>Para um diagnóstico preciso, por favor, escolha o perfil que melhor descreve sua principal fonte de renda.</p>
+            
+            <div class="profile-selection">
+                <div class="profile-card" data-profile="pessoa_fisica">
+                    <h3>Pessoa Física</h3>
+                    <p>Sua principal fonte de renda é um salário ou valor previsível.</p>
+                </div>
+                <div class="profile-card" data-profile="autonomo">
+                    <h3>Autônomo / Liberal</h3>
+                    <p>Sua renda varia a cada mês com base nos seus projetos ou clientes.</p>
+                </div>
+                <div class="profile-card" data-profile="empresa">
+                    <h3>Pequena Empresa</h3>
+                    <p>Você gerencia um negócio com faturamento, custos e despesas operacionais.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="data-entry-step" class="hidden">
+            <!-- Formulários específicos do perfil serão injetados aqui via JS -->
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <!-- ATENÇÃO: Configuração do Firebase - PREENCHA COM SUAS CHAVES -->
+    <script src="/js/firebase-config.js"></script>
+
+    <!-- Script Principal da Aplicação -->
+    <script src="/js/main.js"></script>
+</body>
+</html>

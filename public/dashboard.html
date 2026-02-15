@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SupportingBases - Painel</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Mensagem de carregamento visível por padrão -->
+    <div id="auth-loader">
+        <p>Carregando seu painel...</p>
+    </div>
+
+    <!-- Conteúdo principal oculto por padrão -->
+    <div class="container" id="main-container" style="display: none;">
+        <div class="header-bar">
+            <nav>
+                <a href="/dashboard.html" class="active">Painel</a>
+                <a href="/profile.html">Perfil</a>
+            </nav>
+            <div class="user-info">
+                <span id="user-email"></span>
+                <button id="logout-btn" class="hidden">Logout</button>
+            </div>
+        </div>
+
+        <h1>Painel de Controle Estrutural</h1>
+        <p>Análise da sua estrutura financeira pela Engenharia Anticolapso.</p>
+
+        <div id="simulation-output" class="dashboard">
+            <!-- Diagnóstico da simulação -->
+        </div>
+
+        <!-- ========= SEÇÃO DE LANÇAMENTO RÁPIDO ========= -->
+        <div class="quick-add-section">
+            <h3>Lançamento Rápido</h3>
+            <form id="quick-add-form">
+                <div class="form-row">
+                    <input type="text" id="qa-nome" placeholder="Descrição (ex: Salário, Aluguel)" required>
+                    <input type="number" id="qa-valor" placeholder="Valor" step="0.01" required>
+                    <select id="qa-tipo" required>
+                        <option value="receita">Receita</option>
+                        <option value="despesa">Despesa</option>
+                    </select>
+                    <select id="qa-tipo-custo" class="hidden">
+                        <option value="fixo">Fixo</option>
+                        <option value="variavel">Variável</option>
+                    </select>
+                </div>
+                <button type="submit">Adicionar e Reanalisar</button>
+            </form>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>Fluxo de Caixa Estrutural</h3>
+                <canvas id="cashflow-chart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Diagnóstico de Saúde Estrutural</h3>
+                <canvas id="structural-health-chart"></canvas>
+            </div>
+            <div class="chart-card full-width">
+                <h3>Evolução Estrutural Histórica</h3>
+                <canvas id="history-chart"></canvas>
+            </div>
+        </div>
+
+        <div id="strategic-recommendation" class="recommendation-section">
+            <!-- Recomendações estratégicas -->
+        </div>
+
+    </div>
+
+    <!-- ATENÇÃO: Configuração do Firebase - PREENCHA COM SUAS CHAVES -->
+    <script src="/js/firebase-config.js"></script>
+
+    <script src="/js/simulation.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

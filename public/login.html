@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SupportingBases</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Login</h1>
+        <p id="login-error" class="error-message"></p>
+        <form id="login-form">
+            <input type="email" id="email" placeholder="Seu email" required>
+            <input type="password" id="password" placeholder="Sua senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+        <p>Não tem uma conta? <a href="/register.html">Registre-se</a></p>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <!-- ATENÇÃO: Configuração do Firebase - PREENCHA COM SUAS CHAVES -->
+    <script src="/js/firebase-config.js"></script>
+
+    <!-- Script Principal da Aplicação -->
+    <script src="/js/main.js"></script>
+</body>
+</html>

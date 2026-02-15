@@ -3,14 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SupportingBases - Simulação</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>SupportingBases - Engenharia Anticolapso para suas Finanças</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🔷 SupportingBases - Simulação do Ecossistema 🔷</h1>
-        <div id="simulation-output"></div>
+    <div class="landing-container">
+        <header class="landing-header">
+            <h1>SupportingBases</h1>
+            <p>Engenharia Anticolapso para suas Finanças</p>
+        </header>
+
+        <main class="landing-main">
+            <div class="hero-section">
+                <h2>Pare de adivinhar. Comece a construir.</h2>
+                <p>Nós transformamos a gestão financeira em um processo de engenharia. Analisamos sua estrutura de receitas e despesas para identificar riscos de colapso antes que eles aconteçam, garantindo que você construa um futuro financeiro sólido e resiliente.</p>
+                <a href="/register.html" class="cta-button">Crie sua Estrutura Agora</a>
+                <p class="login-prompt">Já possui uma conta? <a href="/login.html">Faça Login</a></p>
+            </div>
+
+            <div class="features-section">
+                <div class="feature">
+                    <h3>Diagnóstico Estrutural</h3>
+                    <p>Calculamos indicadores de compressão, sobrevivência e instabilidade, os mesmos usados para projetar estruturas reais.</p>
+                </div>
+                <div class="feature">
+                    <h3>Análise de Risco</h3>
+                    <p>Identificamos pontos de falha e oferecemos recomendações estratégicas para fortalecer sua base financeira contra imprevistos.</p>
+                </div>
+                <div class="feature">
+                    <h3>Evolução Contínua</h3>
+                    <p>Acompanhe a saúde da sua estrutura ao longo do tempo com nosso painel de controle evolutivo e tome decisões baseadas em dados.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="landing-footer">
+            <p>&copy; 2024 SupportingBases. Todos os direitos reservados.</p>
+        </footer>
     </div>
-    <script src="js/main.js"></script>
+    
+    <!-- Scripts Essenciais do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- ATENÇÃO: Configuração do Firebase - PREENCHA COM SUAS CHAVES -->
+    <script src="/js/firebase-config.js"></script>
+
+    <!-- Script Principal da Aplicação -->
+    <script src="/js/main.js"></script>
 </body>
 </html>

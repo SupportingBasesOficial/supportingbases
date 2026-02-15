@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SupportingBases - Operações</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <nav>
+                <a href="/index.html">Painel</a>
+                <a href="/operacoes.html" class="active">Operações</a>
+                <a href="/profile.html">Perfil</a>
+            </nav>
+            <div class="user-info">
+                <span id="user-email"></span>
+                <button id="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <h1>Centro de Operações Estruturais</h1>
+
+        <div class="forms-container">
+            <!-- Formulário de Receitas -->
+            <div class="form-section">
+                <h2>Adicionar Receita</h2>
+                <form id="receita-form">
+                    <label for="receita-nome">Descrição:</label>
+                    <input type="text" id="receita-nome" required>
+                    
+                    <label for="receita-valor">Valor:</label>
+                    <input type="number" id="receita-valor" step="0.01" required>
+                    
+                    <label for="receita-data">Data:</label>
+                    <input type="date" id="receita-data" required>
+                    
+                    <button type="submit">Adicionar Receita</button>
+                </form>
+            </div>
+
+            <!-- Formulário de Despesas -->
+            <div class="form-section">
+                <h2>Adicionar Custo</h2>
+                <form id="despesa-form">
+                    <label for="despesa-nome">Descrição:</label>
+                    <input type="text" id="despesa-nome" required>
+
+                    <label for="despesa-valor">Valor:</label>
+                    <input type="number" id="despesa-valor" step="0.01" required>
+
+                    <label for="despesa-data">Data:</label>
+                    <input type="date" id="despesa-data" required>
+
+                    <label for="despesa-tipo">Tipo de Custo:</label>
+                    <select id="despesa-tipo" required>
+                        <option value="fixo">Custo Fixo (Aluguel, Energia)</option>
+                        <option value="variavel">Custo Variável (Lazer, Compras)</option>
+                    </select>
+                    
+                    <button type="submit">Adicionar Custo</button>
+                </form>
+            </div>
+
+            <!-- Formulário de Reserva Financeira -->
+            <div class="form-section">
+                <h2>Declarar Reserva Financeira</h2>
+                <form id="reserva-form">
+                    <label for="reserva-valor">Valor Total da Reserva:</label>
+                    <input type="number" id="reserva-valor" step="0.01" required>
+
+                    <label for="reserva-proposito">Propósito Principal:</label>
+                    <select id="reserva-proposito" required>
+                        <option value="sobrevivencia">Reserva de Sobrevivência</option>
+                        <option value="expansao">Capital de Expansão</option>
+                    </select>
+                    
+                    <button type="submit">Atualizar Reserva</button>
+                </form>
+            </div>
+
+            <!-- Formulário de Volatilidade -->
+            <div class="form-section">
+                <h2>Parâmetros de Volatilidade</h2>
+                <form id="volatilidade-form">
+                    <label for="receita-desvio-padrao">Desvio Padrão da Receita (Mensal):</label>
+                    <input type="number" id="receita-desvio-padrao" step="0.01" required>
+                    
+                    <button type="submit">Atualizar Volatilidade</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="list-container">
+            <h2>Movimentações Registradas</h2>
+            <div id="movimentacoes-lista">
+                <!-- As movimentações serão listadas aqui dinamicamente -->
+            </div>
+        </div>
+
+    </div>
+    <script src="js/main.js"></script>
+</body>
+</html>
