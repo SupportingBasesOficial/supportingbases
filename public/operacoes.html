@@ -4,106 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SupportingBases - Operações</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Firebase SDK -->
+    <link rel="stylesheet" href="/css/style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
-    <div class="container">
+    <!-- Mensagem de carregamento visível por padrão -->
+    <div id="auth-loader">
+        <p>Carregando suas operações...</p>
+    </div>
+
+    <div class="container" id="main-container" style="display: none;">
         <div class="header-bar">
             <nav>
-                <a href="/index.html">Painel</a>
+                <a href="/dashboard.html">Painel</a>
                 <a href="/operacoes.html" class="active">Operações</a>
                 <a href="/profile.html">Perfil</a>
             </nav>
             <div class="user-info">
                 <span id="user-email"></span>
-                <button id="logout-btn">Logout</button>
+                <button id="logout-btn" class="hidden">Logout</button>
             </div>
         </div>
 
-        <h1>Centro de Operações Estruturais</h1>
+        <h1>Gerenciador de Operações</h1>
+        <p>Adicione, edite ou remova suas transações financeiras.</p>
 
-        <div class="forms-container">
-            <!-- Formulário de Receitas -->
-            <div class="form-section">
-                <h2>Adicionar Receita</h2>
-                <form id="receita-form">
-                    <label for="receita-nome">Descrição:</label>
-                    <input type="text" id="receita-nome" required>
-                    
-                    <label for="receita-valor">Valor:</label>
-                    <input type="number" id="receita-valor" step="0.01" required>
-                    
-                    <label for="receita-data">Data:</label>
-                    <input type="date" id="receita-data" required>
-                    
-                    <button type="submit">Adicionar Receita</button>
-                </form>
-            </div>
-
-            <!-- Formulário de Despesas -->
-            <div class="form-section">
-                <h2>Adicionar Custo</h2>
-                <form id="despesa-form">
-                    <label for="despesa-nome">Descrição:</label>
-                    <input type="text" id="despesa-nome" required>
-
-                    <label for="despesa-valor">Valor:</label>
-                    <input type="number" id="despesa-valor" step="0.01" required>
-
-                    <label for="despesa-data">Data:</label>
-                    <input type="date" id="despesa-data" required>
-
-                    <label for="despesa-tipo">Tipo de Custo:</label>
-                    <select id="despesa-tipo" required>
-                        <option value="fixo">Custo Fixo (Aluguel, Energia)</option>
-                        <option value="variavel">Custo Variável (Lazer, Compras)</option>
+        <!-- Seção para Adicionar/Editar Transação -->
+        <div class="transaction-form-card">
+            <h3 id="form-title">Adicionar Nova Transação</h3>
+            <form id="transaction-form">
+                <input type="hidden" id="transaction-id">
+                <div class="form-row">
+                    <input type="text" id="form-nome" placeholder="Descrição" required>
+                    <input type="number" id="form-valor" placeholder="Valor" step="0.01" required>
+                    <input type="date" id="form-data" required>
+                </div>
+                <div class="form-row">
+                    <select id="form-tipo" required>
+                        <option value="receita">Receita</option>
+                        <option value="despesa">Despesa</option>
                     </select>
-                    
-                    <button type="submit">Adicionar Custo</button>
-                </form>
-            </div>
-
-            <!-- Formulário de Reserva Financeira -->
-            <div class="form-section">
-                <h2>Declarar Reserva Financeira</h2>
-                <form id="reserva-form">
-                    <label for="reserva-valor">Valor Total da Reserva:</label>
-                    <input type="number" id="reserva-valor" step="0.01" required>
-
-                    <label for="reserva-proposito">Propósito Principal:</label>
-                    <select id="reserva-proposito" required>
-                        <option value="sobrevivencia">Reserva de Sobrevivência</option>
-                        <option value="expansao">Capital de Expansão</option>
+                    <select id="form-tipo-custo" class="hidden">
+                        <option value="fixo">Custo Fixo</option>
+                        <option value="variavel">Custo Variável</option>
                     </select>
-                    
-                    <button type="submit">Atualizar Reserva</button>
-                </form>
-            </div>
-
-            <!-- Formulário de Volatilidade -->
-            <div class="form-section">
-                <h2>Parâmetros de Volatilidade</h2>
-                <form id="volatilidade-form">
-                    <label for="receita-desvio-padrao">Desvio Padrão da Receita (Mensal):</label>
-                    <input type="number" id="receita-desvio-padrao" step="0.01" required>
-                    
-                    <button type="submit">Atualizar Volatilidade</button>
-                </form>
-            </div>
+                    <select id="form-categoria">
+                        <!-- Categorias serão preenchidas dinamicamente -->
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="save-btn">Salvar</button>
+                    <button type="button" id="cancel-btn" class="hidden">Cancelar</button>
+                </div>
+            </form>
         </div>
 
-        <div class="list-container">
-            <h2>Movimentações Registradas</h2>
-            <div id="movimentacoes-lista">
-                <!-- As movimentações serão listadas aqui dinamicamente -->
+        <!-- Seção para Filtrar e Listar Transações -->
+        <div class="transaction-list-card">
+            <h3>Histórico de Transações</h3>
+            <div class="filters">
+                 <input type="text" id="search-input" placeholder="Buscar por nome...">
+                <select id="filter-tipo">
+                    <option value="todos">Todos os Tipos</option>
+                    <option value="receita">Apenas Receitas</option>
+                    <option value="despesa">Apenas Despesas</option>
+                </select>
+                <button id="apply-filters">Filtrar</button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Valor</th>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactions-table-body">
+                        <!-- Linhas da tabela serão preenchidas dinamicamente -->
+                    </tbody>
+                </table>
             </div>
         </div>
-
     </div>
-    <script src="js/main.js"></script>
+
+    <!-- Scripts -->
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/main.js"></script>
 </body>
 </html>
