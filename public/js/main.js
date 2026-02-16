@@ -5,10 +5,10 @@
  *
  *    Description:  Controla a interface, autenticação, fluxo de dados e renderização.
  *
- *      Version:   12.0.0 (Hotfix - Auth Flow)
- *      Changes:   - Revertida a passagem de parâmetros `auth` e `db`.
- *                 - As variáveis `auth` e `db` agora são globais, garantindo que o
- *                   fluxo de autenticação funcione corretamente em todas as páginas.
+ *      Version:   13.0.0 (Refactor - Dashboard Logic)
+ *      Changes:   - Implementada a lógica de carregamento do dashboard.
+ *                 - Adicionado o carregamento de `recommendations.json`.
+ *                 - `EngineCore` agora é instanciado com as recomendações.
  *
  * =====================================================================================
  */
@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Inicialização das variáveis globais
     auth = firebase.auth();
     db = firebase.firestore();
 
@@ -49,11 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasCompletedSetup = profileDoc.exists && profileDoc.data().fullName;
 
             if (!hasCompletedSetup && !isSetupPage) {
-                window.location.href = '/setup.html';
+                window.location.href = 'setup.html';
                 return;
             }
             if (hasCompletedSetup && (isAuthPage || isLandingPage || isSetupPage)) {
-                window.location.href = '/dashboard.html';
+                window.location.href = 'dashboard.html';
                 return;
             }
             
@@ -76,14 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
             setupGlobalUserUI(user);
 
         } else { // Usuário não logado
+            // Redireciona para o login se não estiver em uma página pública/de autenticação
             if (!isAuthPage && !isLandingPage) {
-                window.location.href = '/login.html';
+                window.location.href = 'login.html';
                 return;
             }
-             // Roteamento de páginas públicas
-            if (path.includes('login.html')) setupLoginPage();
-            if (path.includes('register.html')) setupRegisterPage();
-            if (path.includes('forgot-password.html')) setupForgotPasswordPage();
+            // A lógica das páginas de autenticação agora está em auth.js
         }
     });
 });
@@ -95,48 +92,7 @@ function setupGlobalUserUI(user) {
     if (userEmailSpan) userEmailSpan.textContent = user.email;
     if (logoutBtn) {
         logoutBtn.classList.remove('hidden');
-        logoutBtn.addEventListener('click', () => auth.signOut().then(() => window.location.href = '/login.html'));
-    }
-}
-
-// --- PÁGINAS DE AUTENTICAÇÃO ---
-function setupAuthForm(formId, authFunction) {
-    const form = document.getElementById(formId);
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = form.email.value;
-            const password = form.password.value;
-            authFunction(email, password);
-        });
-    }
-}
-
-function setupLoginPage() {
-    setupAuthForm('login-form', (email, password) => {
-        auth.signInWithEmailAndPassword(email, password)
-            .then(() => window.location.href = '/dashboard.html')
-            .catch(error => alert("Erro no login: " + error.message));
-    });
-}
-
-function setupRegisterPage() {
-    setupAuthForm('register-form', (email, password) => {
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(() => window.location.href = '/setup.html')
-            .catch(error => alert("Erro no registro: " + error.message));
-    });
-}
-
-function setupForgotPasswordPage() {
-    const form = document.getElementById('forgot-password-form');
-    if(form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            auth.sendPasswordResetEmail(form.email.value)
-                .then(() => { alert('E-mail de redefinição enviado!'); window.location.href = '/login.html'; })
-                .catch(error => alert("Erro: " + error.message));
-        });
+        logoutBtn.addEventListener('click', () => auth.signOut().then(() => window.location.href = 'login.html'));
     }
 }
 
@@ -155,7 +111,7 @@ function setupOnboardingPage(user) {
             const userProfileRef = db.collection('users').doc(user.uid).collection('structural_data').doc('user_profile');
             try {
                 await userProfileRef.set(profile, { merge: true });
-                window.location.href = '/dashboard.html';
+                window.location.href = 'dashboard.html';
             } catch (error) {
                 alert("Houve um erro ao salvar seu perfil.");
             }
@@ -221,12 +177,221 @@ async function setupProfilePage(user) {
     });
 }
 
-// O restante do código (dashboard, operações, etc.) permanece inalterado e usará as globais `auth` e `db`
+// --- DASHBOARD ---
+async function setupDashboardPage(user) {
+    setupQuickAddForm(user);
+    await refreshDashboard(user); // Initial load
 
-async function setupDashboardPage(user) { /* ... */ }
-async function setupOperationsPage(user) { /* ... */ }
-async function refreshDashboard(user) { /* ... */ }
-async function fetchAndProcessData(uid) { /* ... */ }
-function renderDashboard(diagnosis, userData) { /* ... */ }
-function renderCharts(userData, diagnosis) { /* ... */ }
-function setupQuickAddForm(user) { /* ... */ }
+    const refreshButton = document.getElementById('refresh-dashboard-btn');
+    if(refreshButton) {
+        refreshButton.addEventListener('click', () => refreshDashboard(user));
+    }
+}
+
+async function refreshDashboard(user) {
+    const loader = document.getElementById('dashboard-loader');
+    if(loader) loader.style.display = 'block';
+
+    try {
+        const response = await fetch('./js/recommendations.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const recommendations = await response.json();
+        
+        const { diagnosis, userData } = await fetchAndProcessData(user.uid, recommendations);
+        
+        renderDashboard(diagnosis, userData);
+
+    } catch (error) {
+        console.error('Error refreshing dashboard:', error);
+        const dashboardElement = document.getElementById('dashboard-content');
+        if(dashboardElement) {
+            dashboardElement.innerHTML = '<p>Ocorreu um erro ao carregar os dados do dashboard. Tente novamente mais tarde.</p>';
+        }
+    } finally {
+        if(loader) loader.style.display = 'none';
+    }
+}
+
+async function fetchAndProcessData(uid, recommendations) {
+    const [entriesSnap, profileDoc, goalsDoc] = await Promise.all([
+        db.collection('users').doc(uid).collection('entries').orderBy('data', 'desc').limit(100).get(),
+        db.collection('users').doc(uid).collection('structural_data').doc('user_profile').get(),
+        db.collection('users').doc(uid).collection('structural_data').doc('user_goals').get()
+    ]);
+
+    const allEntries = entriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const receitas = allEntries.filter(e => e.tipo === 'receita');
+    const despesas = allEntries.filter(e => e.tipo === 'despesa');
+
+    const userProfile = profileDoc.data() || {};
+    const userGoals = goalsDoc.data() || { reserveGoal: 6, riskProfile: 'moderado' };
+    
+    const reservas = despesas.filter(d => d.categoria === 'Reserva de Emergência' || d.categoria === 'Investimentos').reduce((acc, d) => acc + d.valor, 0);
+
+    const monthlyRevenue = receitas.filter(r => new Date(r.data) > new Date(new Date().setMonth(new Date().getMonth() - 1)));
+    const revenueValues = monthlyRevenue.map(r => r.valor);
+    const avgRevenue = revenueValues.reduce((a, b) => a + b, 0) / (revenueValues.length || 1);
+    const receitaDesvioPadrao = Math.sqrt(revenueValues.map(x => Math.pow(x - avgRevenue, 2)).reduce((a, b) => a + b, 0) / (revenueValues.length || 1)) || 0;
+
+    const userData = {
+        receitas: monthlyRevenue,
+        despesas,
+        userProfile,
+        userGoals,
+        reservas,
+        receitaDesvioPadrao
+    };
+
+    const engine = new EngineCore(recommendations);
+    const diagnosis = engine.runStructuralDiagnosis(userData);
+
+    return { diagnosis, userData: { ...userData, allEntries } };
+}
+
+function renderDashboard(diagnosis, userData) {
+    const { structuralPhase, icf, iia, msd, recommendation } = diagnosis;
+    
+    document.getElementById('structural-phase').textContent = structuralPhase || 'N/A';
+    document.getElementById('icf-value').textContent = icf || 'N/A';
+    document.getElementById('iia-value').textContent = iia || 'N/A';
+    document.getElementById('msd-value').textContent = msd || 'N/A';
+    
+    const recommendationBox = document.getElementById('recommendation-box');
+    recommendationBox.innerHTML = recommendation || '<p>Não foi possível gerar uma recomendação.</p>';
+    
+    renderCharts(userData, diagnosis);
+    renderHistory(userData.allEntries);
+}
+
+function renderHistory(entries) {
+    const historyList = document.getElementById('transaction-history-list');
+    if (!historyList) return;
+    historyList.innerHTML = '';
+    entries.slice(0, 5).forEach(entry => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${new Date(entry.data).toLocaleDateString()}</span>
+            <span>${entry.descricao}</span>
+            <span class="${entry.tipo === 'receita' ? 'text-green-500' : 'text-red-500'}">R$ ${entry.valor.toFixed(2)}</span>
+        `;
+        historyList.appendChild(li);
+    });
+}
+
+function renderCharts(userData, diagnosis) {
+    const structuralCtx = document.getElementById('structural-health-chart');
+    if (structuralCtx) {
+        if (structuralHealthChartInstance) structuralHealthChartInstance.destroy();
+        structuralHealthChartInstance = new Chart(structuralCtx, {
+            type: 'bar',
+            data: {
+                labels: ['ICF', 'MSD'],
+                datasets: [{
+                    label: 'Índices Estruturais',
+                    data: [diagnosis.icf, diagnosis.msd],
+                    backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)'],
+                    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    const categoryCtx = document.getElementById('category-chart');
+    if (categoryCtx) {
+        const categoryData = userData.despesas.reduce((acc, d) => {
+            acc[d.categoria] = (acc[d.categoria] || 0) + d.valor;
+            return acc;
+        }, {});
+        if (categoryChartInstance) categoryChartInstance.destroy();
+        categoryChartInstance = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(categoryData),
+                datasets: [{
+                    label: 'Despesas por Categoria',
+                    data: Object.values(categoryData),
+                    backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(54, 162, 235, 0.5)', 'rgba(255, 206, 86, 0.5)', 'rgba(75, 192, 192, 0.5)'],
+                }]
+            }
+        });
+    }
+}
+
+function setupQuickAddForm(user) {
+    const form = document.getElementById('quick-add-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const entry = {
+                descricao: form.descricao.value,
+                valor: parseFloat(form.valor.value),
+                tipo: form.tipo.value,
+                categoria: form.categoria.value,
+                data: new Date().toISOString()
+            };
+            try {
+                await db.collection('users').doc(user.uid).collection('entries').add(entry);
+                form.reset();
+                await refreshDashboard(user);
+            } catch (error) {
+                alert('Erro ao adicionar lançamento.');
+                console.error('Error adding entry:', error);
+            }
+        });
+    }
+}
+
+// --- PÁGINA DE OPERAÇÕES ---
+async function setupOperationsPage(user) {
+    const entryForm = document.getElementById('entry-form');
+    const historyContainer = document.getElementById('history-container');
+    const entriesRef = db.collection('users').doc(user.uid).collection('entries').orderBy('data', 'desc');
+
+    async function loadEntries() {
+        const snapshot = await entriesRef.get();
+        historyContainer.innerHTML = '';
+        snapshot.forEach(doc => {
+            const entry = doc.data();
+            const div = document.createElement('div');
+            div.classList.add('history-item');
+            div.innerHTML = `
+                <span>${new Date(entry.data).toLocaleDateString()}</span>
+                <span>${entry.descricao}</span>
+                <span>${entry.categoria}</span>
+                <span class="valor ${entry.tipo}">${entry.tipo === 'receita' ? '+' : '-'} R$ ${entry.valor.toFixed(2)}</span>
+                <button data-id="${doc.id}" class="delete-btn">X</button>
+            `;
+            historyContainer.appendChild(div);
+        });
+    }
+
+    entryForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const entry = {
+            descricao: entryForm.descricao.value,
+            valor: parseFloat(entryForm.valor.value),
+            tipo: entryForm.tipo.value,
+            categoria: entryForm.categoria.value,
+            data: entryForm.data.value ? new Date(entryForm.data.value).toISOString() : new Date().toISOString()
+        };
+        await db.collection('users').doc(user.uid).collection('entries').add(entry);
+        entryForm.reset();
+        await loadEntries();
+    });
+
+    historyContainer.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-btn')) {
+            const id = e.target.getAttribute('data-id');
+            if (confirm('Tem certeza que deseja apagar este lançamento?')) {
+                await db.collection('users').doc(user.uid).collection('entries').doc(id).delete();
+                await loadEntries();
+            }
+        }
+    });
+
+    await loadEntries();
+}

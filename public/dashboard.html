@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SupportingBases - Painel</title>
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -15,6 +16,9 @@
 
     <div class="container" id="main-container" style="display: none;">
         <header class="header-bar">
+            <div class="logo-container">
+                <img src="/assets/logo.png" alt="SupportingBases Logo" class="logo">
+            </div>
             <nav class="main-nav">
                 <a href="/dashboard.html" class="active">Painel</a>
                 <a href="/operacoes.html">Operações</a>
@@ -27,12 +31,11 @@
         </header>
 
         <main class="content-area">
-            <header class="content-header">
+             <header class="content-header">
                 <h1>Painel de Controle Estrutural</h1>
                 <p>Análise da sua estrutura financeira pela Engenharia Anticolapso.</p>
             </header>
 
-            <!-- Nova Seção de Diagnóstico Estrutural -->
             <section id="diagnosis-section" class="card diagnosis-card">
                 <header class="diagnosis-header">
                     <h2 id="diagnosis-phase-title">-- Analisando Estrutura --</h2>

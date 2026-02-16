@@ -5,18 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuração da Conta - SupportingBases</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Carrega os estilos GLOBAIS (fontes, resets, etc.) -->
     <link rel="stylesheet" href="/css/main.css">
+    <!-- Carrega os estilos ESPECÍFICOS do Dashboard para consistência -->
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div id="auth-loader"><div class="loader"></div></div>
 
     <div class="container" id="main-container" style="display: none;">
-        <header class="content-header">
+        <header class="content-header" style="text-align: center; margin-bottom: 30px;">
             <h1>Configuração da Conta</h1>
             <p>Para um diagnóstico preciso, por favor, preencha os dados abaixo.</p>
         </header>
 
-        <div class="card">
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
             <form id="onboarding-form">
                 <div class="form-group">
                     <label for="fullName">Nome Completo</label>
@@ -44,8 +48,8 @@
                     <small>Isso nos ajuda a personalizar a análise da sua estrutura financeira.</small>
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit">Salvar e Iniciar</button>
+                <div class="form-actions" style="justify-content: center; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary btn-large">Salvar e Iniciar</button>
                 </div>
             </form>
         </div>
@@ -59,7 +63,8 @@
     <!-- Configuração do Firebase -->
     <script src="/js/firebase-config.js"></script>
 
-    <!-- Script Principal -->
+    <!-- Script Principal e de Autenticação -->
+    <script src="/js/auth.js"></script>
     <script src="/js/main.js"></script>
 </body>
 </html>
