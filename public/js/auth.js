@@ -38,7 +38,15 @@ function setupRegisterPage(auth) {
 
         auth.createUserWithEmailAndPassword(email, password)
             .then(userCredential => {
-                window.location.href = 'setup.html';
+                const user = userCredential.user;
+                const db = firebase.firestore();
+                return db.collection('users').doc(user.uid).set({
+                    email: user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    window.location.href = 'setup.html';
+                });
             })
             .catch(error => {
                 let friendlyMessage = "Ocorreu um erro desconhecido.";

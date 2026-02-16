@@ -1,153 +1,132 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SupportingBases - Painel</title>
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/dashboard.css">
+    <title>Dashboard - SupportingBases</title>
+    <link rel="stylesheet" href="css/main.css">
     <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="js/firebase-config.js" defer></script>
+    <script src="js/simulation.js" defer></script>
+    <script src="js/main.js" defer></script>
 </head>
 <body>
-    <div id="auth-loader"><div class="loader"></div></div>
+    <div id="auth-loader" class="auth-loader-container"><div class="loader"></div></div>
 
-    <div class="container" id="main-container" style="display: none;">
-        <header class="header-bar">
-            <div class="logo-container">
-                <img src="/assets/logo.png" alt="SupportingBases Logo" class="logo">
+    <div id="main-container" class="app-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html">
+                    <img src="/assets/logo-symbol.svg" alt="SupportingBases Symbol">
+                </a>
             </div>
-            <nav class="main-nav">
-                <a href="/dashboard.html" class="active">Painel</a>
-                <a href="/operacoes.html">Operações</a>
-                <a href="/profile.html">Perfil</a>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" title="Dashboard" class="active"><img src="/assets/icon-dashboard-white.svg" alt="Dashboard"></a>
+                <a href="operacoes.html" title="Operações"><img src="/assets/icon-transactions.svg" alt="Operações"></a>
+                <a href="metas.html" title="Metas"><img src="/assets/icon-target.svg" alt="Metas"></a>
+                <a href="profile.html" title="Meu Perfil"><img src="/assets/icon-profile.svg" alt="Meu Perfil"></a>
             </nav>
-            <div class="user-info">
-                <span id="user-email"></span>
-                <button id="logout-btn" class="hidden">Logout</button>
+            <div class="sidebar-footer">
+                <button id="logout-btn" title="Sair"><img src="/assets/icon-logout.svg" alt="Sair"></button>
             </div>
-        </header>
+        </aside>
 
-        <main class="content-area">
-             <header class="content-header">
+        <main class="main-content">
+            <header class="main-header">
                 <h1>Painel de Controle Estrutural</h1>
-                <p>Análise da sua estrutura financeira pela Engenharia Anticolapso.</p>
+                <div class="header-actions">
+                     <span id="user-email"></span>
+                     <button id="refresh-dashboard-btn">Atualizar Análise</button>
+                </div>
             </header>
 
-            <section id="diagnosis-section" class="card diagnosis-card">
-                <header class="diagnosis-header">
-                    <h2 id="diagnosis-phase-title">-- Analisando Estrutura --</h2>
-                    <p>Este é o seu status atual de acordo com a Engenharia Anticolapso.</p>
-                </header>
+            <div id="dashboard-loader" style="display: none;" class="loader-container"><div class="loader"></div></div>
 
-                <div class="kpi-grid">
-                    <div class="kpi-item">
-                        <h4>Índice de Compressão (ICF)</h4>
-                        <p id="kpi-icf">--</p>
-                        <small>Quanto da sua renda é consumida por custos fixos.</small>
+            <div class="content-body" id="dashboard-content">
+                <div class="card-grid">
+                    <!-- Card de Diagnóstico Principal -->
+                    <div class="card full-width-card" id="diagnosis-card">
+                        <div class="card-header">
+                            <h2 id="diagnosis-phase-title">-- Analisando Estrutura --</h2>
+                        </div>
+                        <div class="kpi-grid-main">
+                            <div class="kpi-item">
+                                <h3>Índice de Compressão (ICF)</h3>
+                                <p id="kpi-icf">--</p>
+                                <small>Percentual da sua renda consumida por custos fixos.</small>
+                            </div>
+                            <div class="kpi-item">
+                                <h3>Meses de Sobrevivência (MSD)</h3>
+                                <p id="kpi-msd">--</p>
+                                <small>Reserva de emergência em meses de custo total.</small>
+                            </div>
+                            <div class="kpi-item">
+                                <h3>Índice de Instabilidade (IIA)</h3>
+                                <p id="kpi-iia">--</p>
+                                <small>Risco de sua renda não cobrir seus custos.</small>
+                            </div>
+                        </div>
+                        <div class="action-plan" id="action-plan-content">
+                           <p>Analisando sua estrutura para gerar recomendações...</p>
+                        </div>
                     </div>
-                    <div class="kpi-item">
-                        <h4>Meses de Sobrevivência (MSD)</h4>
-                        <p id="kpi-msd">--</p>
-                        <small>Quantos meses você sobrevive com suas reservas.</small>
-                    </div>
-                    <div class="kpi-item">
-                        <h4>Índice de Instabilidade (IIA)</h4>
-                        <p id="kpi-iia">--</p>
-                        <small>O risco de sua renda não cobrir seus custos.</small>
-                    </div>
-                </div>
 
-                <div id="action-plan-section" class="action-plan">
-                    <h3>Plano de Ação Estratégico</h3>
-                    <div id="action-plan-content">
-                        <p>Analisando sua estrutura para gerar recomendações...</p>
-                    </div>
-                </div>
-            </section>
-
-            <div class="card">
-                <h3>Lançamento Rápido</h3>
-                <form id="quick-add-form">
-                    <div class="form-row">
-                        <div class="form-group" style="flex-grow: 2;">
-                            <label for="qa-nome">Descrição</label>
-                            <input type="text" id="qa-nome" placeholder="Ex: Salário, Aluguel" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="qa-valor">Valor</label>
-                            <input type="number" id="qa-valor" placeholder="0.00" step="0.01" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="qa-tipo">Tipo</label>
-                            <select id="qa-tipo" required>
-                                <option value="receita">Receita</option>
-                                <option value="despesa">Despesa</option>
-                            </select>
-                        </div>
-                        <div class="form-group hidden" id="qa-tipo-custo-group">
-                            <label for="qa-tipo-custo">Sub-tipo</label>
-                            <select id="qa-tipo-custo">
-                                <option value="fixo">Fixo</option>
-                                <option value="variavel">Variável</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="qa-categoria">Categoria</label>
-                             <select id="qa-categoria" required>
-                                <option value="outros">Outros</option>
-                                <optgroup label="Receitas">
-                                    <option value="salario">Salário</option>
-                                    <option value="servicos">Serviços</option>
-                                    <option value="vendas">Vendas</option>
-                                </optgroup>
-                                <optgroup label="Despesas">
+                    <!-- Card de Lançamento Rápido -->
+                    <div class="card" id="quick-add-card">
+                        <h3>Lançamento Rápido</h3>
+                        <form id="quick-add-form">
+                            <div class="form-group">
+                                <label for="descricao">Descrição</label>
+                                <input type="text" id="descricao" name="descricao" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="valor">Valor</label>
+                                <input type="number" id="valor" name="valor" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tipo">Tipo</label>
+                                <select id="tipo" name="tipo">
+                                    <option value="despesa">Despesa</option>
+                                    <option value="receita">Receita</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="categoria">Categoria</label>
+                                <select id="categoria" name="categoria">
+                                    <option value="outros">Outros</option>
                                     <option value="moradia">Moradia</option>
                                     <option value="transporte">Transporte</option>
                                     <option value="alimentacao">Alimentação</option>
-                                    <option value="saude">Saúde</option>
-                                    <option value="lazer">Lazer</option>
-                                    <option value="educacao">Educação</option>
-                                    <option value="investimentos">Investimentos</option>
-                                </optgroup>
-                            </select>
-                        </div>
+                                </select>
+                            </div>
+                            <button type="submit">Adicionar</button>
+                        </form>
                     </div>
-                    <div class="form-actions">
-                        <button type="submit">Adicionar e Reanalisar</button>
-                    </div>
-                </form>
-            </div>
 
-            <div class="charts-container">
-                 <div class="card">
-                    <h3>Distribuição de Despesas</h3>
-                    <canvas id="category-chart"></canvas>
-                </div>
-                <div class="card">
-                    <h3>Fluxo de Caixa Estrutural</h3>
-                    <canvas id="cashflow-chart"></canvas>
-                </div>
-                <div class="card">
-                    <h3>Saúde da Reserva (MSD)</h3>
-                    <canvas id="structural-health-chart"></canvas>
-                </div>
-                <div class="card full-width">
-                    <h3>Evolução do Patrimônio</h3>
-                    <canvas id="history-chart"></canvas>
+                    <!-- Card de Histórico de Transações -->
+                    <div class="card" id="transaction-history-card">
+                        <h3>Histórico Recente</h3>
+                        <ul id="transaction-history-list"></ul>
+                    </div>
+                    
+                    <!-- Card de Gráfico de Categorias -->
+                    <div class="card">
+                         <h3>Despesas por Categoria</h3>
+                        <canvas id="category-chart"></canvas>
+                    </div>
+
+                    <!-- Card de Gráfico de Saúde Estrutural -->
+                    <div class="card">
+                        <h3>Índices Estruturais</h3>
+                        <canvas id="structural-health-chart"></canvas>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
-
-    <script src="/js/firebase-config.js"></script>
-    <script src="/js/simulation.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <script src="/js/main.js"></script>
 </body>
 </html>

@@ -5,10 +5,10 @@
  *
  *    Description:  MÓDULO 1: ENGINE CORE (Motor de Engenharia Anticolapso).
  *                  Este módulo é o núcleo matemático do SupportingBases.
- *
- *      Version:   4.1.0 (Refactor - Recommendations as JSON)
- *      Changes:   - Recomendações estratégicas movidas para um arquivo JSON externo (recommendations.json).
- *                  - Lógica de `generateStrategicRecommendations` atualizada para carregar e processar o JSON.
+ *      
+ *      Version:   5.0.0 (Refactor - Calculation Accuracy)
+ *      Changes:   - `totalObligations` agora exclui investimentos, tratando-os como patrimônio.
+ *                 - Métodos de cálculo retornam números em vez de strings para precisão.
  *
  * =====================================================================================
  */
@@ -60,25 +60,30 @@ class EngineCore {
         const averageRevenue = userData.receitas.length > 0 ? userData.receitas.reduce((acc, r) => acc + r.valor, 0) / userData.receitas.length : 0;
         const volatilityAdjustment = (userData.receitaDesvioPadrao || 0) * safetyFactor;
         const adjustedRevenue = Math.max(1, averageRevenue - volatilityAdjustment);
-        const fixedObligations = userData.despesas.filter(d => d.tipoCusto === 'fixo').reduce((acc, d) => acc + d.valor, 0);
-        const totalObligations = userData.despesas.reduce((acc, d) => acc + d.valor, 0);
+        
+        // Exclui investimentos e reservas do cálculo de obrigações operacionais
+        const operationalExpenses = userData.despesas.filter(d => d.categoria !== 'Investimentos' && d.categoria !== 'Reserva de Emergência');
+
+        const fixedObligations = operationalExpenses.filter(d => d.tipoCusto === 'fixo').reduce((acc, d) => acc + d.valor, 0);
+        const totalObligations = operationalExpenses.reduce((acc, d) => acc + d.valor, 0);
+        
         return { adjustedRevenue, fixedObligations, totalObligations };
     }
 
     calculateICF(fixedObligations, adjustedRevenue) {
         if (adjustedRevenue === 0) return Infinity;
-        return (fixedObligations / adjustedRevenue).toFixed(2);
+        return fixedObligations / adjustedRevenue;
     }
 
     calculateMSD(reservas, totalObligations) {
         if (totalObligations === 0) return Infinity;
-        return (reservas / totalObligations).toFixed(2);
+        return reservas / totalObligations;
     }
 
     calculateIIA(totalObligations, adjustedRevenue) {
         const netFlow = adjustedRevenue - totalObligations;
-        if (netFlow >= 0) return "0.00";
-        return Math.abs(netFlow / adjustedRevenue).toFixed(2);
+        if (netFlow >= 0) return 0;
+        return Math.abs(netFlow / adjustedRevenue);
     }
 
     determineStructuralPhase(icf, msd, userGoals) {
@@ -95,10 +100,10 @@ class EngineCore {
 
         const recommendationTemplate = this.recommendations[phase] ? this.recommendations[phase][profile] : "<p>Analisando sua estrutura para gerar recomendações...</p>";
 
-        // Replace placeholders with actual values
+        // Placeholders são substituídos na camada de renderização (main.js)
         return recommendationTemplate
-            .replace('${icf}', icf)
-            .replace('${msd}', msd)
+            .replace('${icf}', (icf * 100).toFixed(1) + '%')
+            .replace('${msd}', msd.toFixed(1))
             .replace('${reserveTarget}', reserveTarget);
     }
 }

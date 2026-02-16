@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Metas - SupportingBases</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/metas.css"> <!-- Estilos específicos da página -->
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="js/firebase-config.js" defer></script>
+    <script src="js/main.js" defer></script>
+</head>
+<body>
+    <div id="auth-loader" class="auth-loader-container">
+        <div class="loader"></div>
+    </div>
+
+    <div id="main-container" class="app-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html">
+                    <img src="/assets/logo-symbol.svg" alt="SupportingBases Symbol">
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" title="Dashboard"><img src="/assets/icon-dashboard.svg" alt="Dashboard"></a>
+                <a href="operacoes.html" title="Operações"><img src="/assets/icon-transactions.svg" alt="Operações"></a>
+                <a href="metas.html" title="Metas" class="active"><img src="/assets/icon-target-white.svg" alt="Metas"></a>
+                <a href="profile.html" title="Meu Perfil"><img src="/assets/icon-profile.svg" alt="Meu Perfil"></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logout-btn" title="Sair"><img src="/assets/icon-logout.svg" alt="Sair"></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Minhas Metas</h1>
+                <p>Cadastre e acompanhe seus objetivos financeiros de longo prazo.</p>
+            </header>
+
+            <div class="content-body">
+                <div class="card">
+                    <h2>Adicionar Nova Meta</h2>
+                    <form id="goal-form" class="grid-form">
+                        <div class="form-group">
+                            <label for="goal-name">Nome da Meta</label>
+                            <input type="text" id="goal-name" name="goal-name" placeholder="Ex: Viagem dos sonhos" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-target-amount">Valor Total (R$)</label>
+                            <input type="number" id="goal-target-amount" name="goal-target-amount" placeholder="25000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-current-amount">Valor Atual (R$)</label>
+                            <input type="number" id="goal-current-amount" name="goal-current-amount" placeholder="5000" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-target-date">Data Alvo</label>
+                            <input type="date" id="goal-target-date" name="goal-target-date" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <button type="submit">Adicionar Meta</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Acompanhamento</h2>
+                    <div id="goals-list-container">
+                        <!-- Metas serão carregadas aqui pelo main.js -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

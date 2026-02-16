@@ -1,51 +1,51 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SupportingBases - Perfil</title>
-    <!-- Carrega os estilos GLOBAIS (fontes, resets, etc.) -->
-    <link rel="stylesheet" href="/css/main.css">
-    <!-- Carrega os estilos ESPECÍFICOS do Dashboard -->
-    <link rel="stylesheet" href="/css/dashboard.css">
+    <title>Meu Perfil - SupportingBases</title>
+    <link rel="stylesheet" href="css/main.css">
     <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="js/firebase-config.js" defer></script>
+    <script src="js/main.js" defer></script>
 </head>
 <body>
-    <div id="auth-loader"><div class="loader"></div></div>
+    <div id="auth-loader" class="auth-loader-container"><div class="loader"></div></div>
 
-    <div class="container" id="main-container" style="display: none;">
-        <header class="header-bar">
-            <div class="logo-container">
-                <img src="/assets/logo.png" alt="SupportingBases Logo" class="logo">
+    <div id="main-container" class="app-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html">
+                    <img src="/assets/logo-symbol.svg" alt="SupportingBases Symbol">
+                </a>
             </div>
-            <nav class="main-nav">
-                <a href="/dashboard.html">Painel</a>
-                <a href="/operacoes.html">Operações</a>
-                <a href="/profile.html" class="active">Perfil</a>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" title="Dashboard"><img src="/assets/icon-dashboard.svg" alt="Dashboard"></a>
+                <a href="operacoes.html" title="Operações"><img src="/assets/icon-transactions.svg" alt="Operações"></a>
+                <a href="metas.html" title="Metas"><img src="/assets/icon-target.svg" alt="Metas"></a>
+                <a href="profile.html" title="Meu Perfil" class="active"><img src="/assets/icon-profile-white.svg" alt="Meu Perfil"></a>
             </nav>
-            <div class="user-info">
-                <span id="user-email"></span>
-                <button id="logout-btn" class="hidden">Logout</button>
+            <div class="sidebar-footer">
+                <button id="logout-btn" title="Sair"><img src="/assets/icon-logout.svg" alt="Sair"></button>
             </div>
-        </header>
+        </aside>
 
-        <main class="content-area">
-            <header class="content-header">
-                <h1>Perfil e Metas</h1>
-                <p>Ajuste suas informações pessoais e metas financeiras para personalizar a análise.</p>
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Meu Perfil e Configurações</h1>
+                <p>Ajuste suas informações para uma análise financeira mais precisa.</p>
             </header>
 
-            <div class="profile-layout">
-                <!-- Card de Dados Pessoais -->
+            <div class="content-body">
                 <div class="card">
-                    <h3>Dados Pessoais</h3>
-                    <form id="profile-form">
+                    <h2>Dados Pessoais</h2>
+                    <form id="profile-form" class="grid-form">
                         <div class="form-group">
                             <label for="fullName">Nome Completo</label>
-                            <input type="text" id="fullName" name="fullName" placeholder="Seu nome completo" required>
+                            <input type="text" id="fullName" name="fullName" required>
                         </div>
                         <div class="form-group">
                             <label for="birthDate">Data de Nascimento</label>
@@ -53,50 +53,44 @@
                         </div>
                         <div class="form-group">
                             <label for="country">País de Residência</label>
-                            <input type="text" id="country" name="country" placeholder="Ex: Brasil" required>
+                            <input type="text" id="country" name="country" placeholder="Brasil" required>
                         </div>
-                        <div class="form-group">
+                         <div class="form-group">
                             <label for="profile">Perfil de Renda</label>
                             <select id="profile" name="profile" required>
-                                <option value="pessoa_fisica">Pessoa Física (Salário / Renda Fixa)</option>
-                                <option value="autonomo">Autônomo / Profissional Liberal</option>
-                                <option value="empresa">Pequena Empresa</option>
+                                <option value="pessoa_fisica">Pessoa Física (CLT)</option>
+                                <option value="autonomo">Autônomo / Freelancer</option>
+                                <option value="empresa">Empresário (MEI, etc)</option>
                             </select>
                         </div>
-                        <div class="form-actions">
+                        <div class="form-group full-width">
                             <button type="submit">Salvar Dados Pessoais</button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Card de Metas Financeiras -->
                 <div class="card">
-                    <h3>Metas Financeiras</h3>
-                    <form id="goals-form">
+                    <h2>Parâmetros da Análise</h2>
+                    <form id="goals-form" class="grid-form">
                         <div class="form-group">
-                            <label for="reserveGoal">Meta de Reserva de Emergência (meses)</label>
-                            <input type="number" id="reserveGoal" name="reserveGoal" min="0" step="0.5" placeholder="Ex: 6" required>
-                            <small>Quantos meses de custos sua reserva de emergência deve cobrir.</small>
+                            <label for="reserveGoal">Meta da Reserva de Emergência (em meses)</label>
+                            <input type="number" id="reserveGoal" name="reserveGoal" min="1" step="0.5" placeholder="6" required>
                         </div>
                         <div class="form-group">
-                            <label for="riskProfile">Perfil de Risco</label>
+                            <label for="riskProfile">Nível de Tolerância ao Risco</label>
                             <select id="riskProfile" name="riskProfile" required>
                                 <option value="conservador">Conservador</option>
                                 <option value="moderado">Moderado</option>
                                 <option value="agressivo">Agressivo</option>
                             </select>
-                            <small>Define o fator de segurança usado nos cálculos de receita.</small>
                         </div>
-                        <div class="form-actions">
-                            <button type="submit">Salvar Metas</button>
+                        <div class="form-group full-width">
+                            <button type="submit">Salvar Parâmetros</button>
                         </div>
                     </form>
                 </div>
             </div>
         </main>
     </div>
-
-    <script src="/js/firebase-config.js"></script>
-    <script src="/js/main.js"></script>
 </body>
 </html>
