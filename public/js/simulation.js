@@ -6,20 +6,14 @@
  *    Description:  MÓDULO 1: ENGINE CORE (Motor de Engenharia Anticolapso).
  *                  Este módulo é o núcleo matemático do SupportingBases.
  *
- *      Version:   3.0.0 (Feature - Profile-Based Analysis)
- *      Changes:   - O motor agora recebe o perfil do usuário (`pessoa_fisica`, `autonomo`, `empresa`).
- *                 - A função `generateStrategicRecommendations` foi refeita para fornecer
- *                   diagnósticos e recomendações específicas para cada perfil e fase estrutural.
+ *      Version:   4.0.0 (Feature - Complete Recommendations)
+ *      Changes:   - Adicionadas recomendações estratégicas para todos os perfis em todas as fases.
  *
  * =====================================================================================
  */
 
 class EngineCore {
 
-    /**
-     * Ponto de entrada para o diagnóstico estrutural completo.
-     * AGORA RECEBE E PASSA ADIANTE O PERFIL DO USUÁRIO.
-     */
     runStructuralDiagnosis(userData) {
         if (!this.validateUserData(userData)) {
             return { structuralPhase: "Erro de Dados", icf: null, iia: null, msd: null, recommendation: "Dados insuficientes para análise."};
@@ -33,7 +27,6 @@ class EngineCore {
 
         const structuralPhase = this.determineStructuralPhase(icf, msd, userData.userGoals);
         
-        // A MUDANÇA PRINCIPAL: Passa o perfil do usuário para gerar a recomendação correta.
         const recommendation = this.generateStrategicRecommendations(structuralPhase, icf, msd, userData.userGoals, userData.userProfile);
 
         return {
@@ -91,12 +84,9 @@ class EngineCore {
         return "Fase 4 - Expansão";
     }
 
-    /**
-     * Gera recomendações estratégicas com base na FASE e no PERFIL do usuário.
-     */
     generateStrategicRecommendations(phase, icf, msd, userGoals, userProfile) {
         const reserveTarget = userGoals.reserveGoal || 6;
-        const profile = userProfile.profile || 'pessoa_fisica'; // Default para segurança
+        const profile = userProfile.profile || 'pessoa_fisica';
 
         const recommendations = {
             "Fase 1 - Sobrevivência": {
@@ -128,4 +118,8 @@ class EngineCore {
 
         return recommendations[phase] ? recommendations[phase][profile] : "<p>Analisando sua estrutura para gerar recomendações...</p>";
     }
+}
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = EngineCore;
 }

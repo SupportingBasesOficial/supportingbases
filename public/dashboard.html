@@ -4,83 +4,147 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SupportingBases - Painel</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Mensagem de carregamento visível por padrão -->
-    <div id="auth-loader">
-        <p>Carregando seu painel...</p>
-    </div>
+    <div id="auth-loader"><div class="loader"></div></div>
 
-    <!-- Conteúdo principal oculto por padrão -->
     <div class="container" id="main-container" style="display: none;">
-        <div class="header-bar">
-            <nav>
+        <header class="header-bar">
+            <nav class="main-nav">
                 <a href="/dashboard.html" class="active">Painel</a>
+                <a href="/operacoes.html">Operações</a>
                 <a href="/profile.html">Perfil</a>
             </nav>
             <div class="user-info">
                 <span id="user-email"></span>
                 <button id="logout-btn" class="hidden">Logout</button>
             </div>
-        </div>
+        </header>
 
-        <h1>Painel de Controle Estrutural</h1>
-        <p>Análise da sua estrutura financeira pela Engenharia Anticolapso.</p>
+        <main class="content-area">
+            <header class="content-header">
+                <h1>Painel de Controle Estrutural</h1>
+                <p>Análise da sua estrutura financeira pela Engenharia Anticolapso.</p>
+            </header>
 
-        <div id="simulation-output" class="dashboard">
-            <!-- Diagnóstico da simulação -->
-        </div>
+            <!-- Nova Seção de Diagnóstico Estrutural -->
+            <section id="diagnosis-section" class="card diagnosis-card">
+                <header class="diagnosis-header">
+                    <h2 id="diagnosis-phase-title">-- Analisando Estrutura --</h2>
+                    <p>Este é o seu status atual de acordo com a Engenharia Anticolapso.</p>
+                </header>
 
-        <!-- ========= SEÇÃO DE LANÇAMENTO RÁPIDO ========= -->
-        <div class="quick-add-section">
-            <h3>Lançamento Rápido</h3>
-            <form id="quick-add-form">
-                <div class="form-row">
-                    <input type="text" id="qa-nome" placeholder="Descrição (ex: Salário, Aluguel)" required>
-                    <input type="number" id="qa-valor" placeholder="Valor" step="0.01" required>
-                    <select id="qa-tipo" required>
-                        <option value="receita">Receita</option>
-                        <option value="despesa">Despesa</option>
-                    </select>
-                    <select id="qa-tipo-custo" class="hidden">
-                        <option value="fixo">Fixo</option>
-                        <option value="variavel">Variável</option>
-                    </select>
+                <div class="kpi-grid">
+                    <div class="kpi-item">
+                        <h4>Índice de Compressão (ICF)</h4>
+                        <p id="kpi-icf">--</p>
+                        <small>Quanto da sua renda é consumida por custos fixos.</small>
+                    </div>
+                    <div class="kpi-item">
+                        <h4>Meses de Sobrevivência (MSD)</h4>
+                        <p id="kpi-msd">--</p>
+                        <small>Quantos meses você sobrevive com suas reservas.</small>
+                    </div>
+                    <div class="kpi-item">
+                        <h4>Índice de Instabilidade (IIA)</h4>
+                        <p id="kpi-iia">--</p>
+                        <small>O risco de sua renda não cobrir seus custos.</small>
+                    </div>
                 </div>
-                <button type="submit">Adicionar e Reanalisar</button>
-            </form>
-        </div>
 
-        <div class="charts-container">
-            <div class="chart-card">
-                <h3>Fluxo de Caixa Estrutural</h3>
-                <canvas id="cashflow-chart"></canvas>
-            </div>
-            <div class="chart-card">
-                <h3>Diagnóstico de Saúde Estrutural</h3>
-                <canvas id="structural-health-chart"></canvas>
-            </div>
-            <div class="chart-card full-width">
-                <h3>Evolução Estrutural Histórica</h3>
-                <canvas id="history-chart"></canvas>
-            </div>
-        </div>
+                <div id="action-plan-section" class="action-plan">
+                    <h3>Plano de Ação Estratégico</h3>
+                    <div id="action-plan-content">
+                        <p>Analisando sua estrutura para gerar recomendações...</p>
+                    </div>
+                </div>
+            </section>
 
-        <div id="strategic-recommendation" class="recommendation-section">
-            <!-- Recomendações estratégicas -->
-        </div>
+            <div class="card">
+                <h3>Lançamento Rápido</h3>
+                <form id="quick-add-form">
+                    <div class="form-row">
+                        <div class="form-group" style="flex-grow: 2;">
+                            <label for="qa-nome">Descrição</label>
+                            <input type="text" id="qa-nome" placeholder="Ex: Salário, Aluguel" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="qa-valor">Valor</label>
+                            <input type="number" id="qa-valor" placeholder="0.00" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="qa-tipo">Tipo</label>
+                            <select id="qa-tipo" required>
+                                <option value="receita">Receita</option>
+                                <option value="despesa">Despesa</option>
+                            </select>
+                        </div>
+                        <div class="form-group hidden" id="qa-tipo-custo-group">
+                            <label for="qa-tipo-custo">Sub-tipo</label>
+                            <select id="qa-tipo-custo">
+                                <option value="fixo">Fixo</option>
+                                <option value="variavel">Variável</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="qa-categoria">Categoria</label>
+                             <select id="qa-categoria" required>
+                                <option value="outros">Outros</option>
+                                <optgroup label="Receitas">
+                                    <option value="salario">Salário</option>
+                                    <option value="servicos">Serviços</option>
+                                    <option value="vendas">Vendas</option>
+                                </optgroup>
+                                <optgroup label="Despesas">
+                                    <option value="moradia">Moradia</option>
+                                    <option value="transporte">Transporte</option>
+                                    <option value="alimentacao">Alimentação</option>
+                                    <option value="saude">Saúde</option>
+                                    <option value="lazer">Lazer</option>
+                                    <option value="educacao">Educação</option>
+                                    <option value="investimentos">Investimentos</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">Adicionar e Reanalisar</button>
+                    </div>
+                </form>
+            </div>
 
+            <div class="charts-container">
+                 <div class="card">
+                    <h3>Distribuição de Despesas</h3>
+                    <canvas id="category-chart"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Fluxo de Caixa Estrutural</h3>
+                    <canvas id="cashflow-chart"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Saúde da Reserva (MSD)</h3>
+                    <canvas id="structural-health-chart"></canvas>
+                </div>
+                <div class="card full-width">
+                    <h3>Evolução do Patrimônio</h3>
+                    <canvas id="history-chart"></canvas>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- ATENÇÃO: Configuração do Firebase - PREENCHA COM SUAS CHAVES -->
     <script src="/js/firebase-config.js"></script>
-
     <script src="/js/simulation.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="/js/main.js"></script>
 </body>
 </html>

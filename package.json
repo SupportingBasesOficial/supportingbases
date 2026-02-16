@@ -3,17 +3,12 @@
   "version": "1.0.0",
   "description": "Análise financeira e projeção de fluxo de caixa.",
   "main": "public/js/main.js",
-  "scripts": {
-    "test": "jest"
-  },
+  "scripts": {},
   "keywords": [
     "firebase",
     "finance",
     "simulation"
   ],
   "author": "Firebase Studio",
-  "license": "ISC",
-  "devDependencies": {
-    "jest": "^29.7.0"
-  }
+  "license": "ISC"
 }

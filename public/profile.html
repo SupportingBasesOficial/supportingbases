@@ -4,53 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SupportingBases - Perfil</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <!-- Firebase SDK -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header-bar">
-            <nav>
+    <div id="auth-loader"><div class="loader"></div></div>
+
+    <div class="container" id="main-container" style="display: none;">
+        <header class="header-bar">
+            <nav class="main-nav">
                 <a href="/dashboard.html">Painel</a>
+                <a href="/operacoes.html">Operações</a>
                 <a href="/profile.html" class="active">Perfil</a>
             </nav>
             <div class="user-info">
                 <span id="user-email"></span>
-                <button id="logout-btn">Logout</button>
+                <button id="logout-btn" class="hidden">Logout</button>
             </div>
-        </div>
+        </header>
 
-        <h1>Perfil e Metas</h1>
-        <p>Ajuste suas metas e perfil para personalizar a análise.</p>
+        <main class="content-area">
+            <header class="content-header">
+                <h1>Perfil e Metas</h1>
+                <p>Ajuste suas informações pessoais e metas financeiras para personalizar a análise.</p>
+            </header>
 
-        <div class="profile-settings-card">
-            <h3>Configurações e Metas</h3>
-            <form id="profile-form">
-                <div class="form-group">
-                    <label for="reserve-goal">Meta de Reserva de Emergência (meses)</label>
-                    <input type="number" id="reserve-goal" name="reserve-goal" min="0" step="0.5" placeholder="Ex: 6">
+            <div class="profile-layout">
+                <!-- Card de Dados Pessoais -->
+                <div class="card">
+                    <h3>Dados Pessoais</h3>
+                    <form id="profile-form">
+                        <div class="form-group">
+                            <label for="fullName">Nome Completo</label>
+                            <input type="text" id="fullName" name="fullName" placeholder="Seu nome completo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="birthDate">Data de Nascimento</label>
+                            <input type="date" id="birthDate" name="birthDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">País de Residência</label>
+                            <input type="text" id="country" name="country" placeholder="Ex: Brasil" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile">Perfil de Renda</label>
+                            <select id="profile" name="profile" required>
+                                <option value="pessoa_fisica">Pessoa Física (Salário / Renda Fixa)</option>
+                                <option value="autonomo">Autônomo / Profissional Liberal</option>
+                                <option value="empresa">Pequena Empresa</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit">Salvar Dados Pessoais</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="risk-profile">Perfil de Risco</label>
-                    <select id="risk-profile" name="risk-profile">
-                        <option value="conservador">Conservador</option>
-                        <option value="moderado">Moderado</option>
-                        <option value="agressivo">Agressivo</option>
-                    </select>
-                </div>
-                <button type="submit">Salvar Alterações</button>
-            </form>
-        </div>
 
+                <!-- Card de Metas Financeiras -->
+                <div class="card">
+                    <h3>Metas Financeiras</h3>
+                    <form id="goals-form">
+                        <div class="form-group">
+                            <label for="reserveGoal">Meta de Reserva de Emergência (meses)</label>
+                            <input type="number" id="reserveGoal" name="reserveGoal" min="0" step="0.5" placeholder="Ex: 6" required>
+                            <small>Quantos meses de custos sua reserva de emergência deve cobrir.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="riskProfile">Perfil de Risco</label>
+                            <select id="riskProfile" name="riskProfile" required>
+                                <option value="conservador">Conservador</option>
+                                <option value="moderado">Moderado</option>
+                                <option value="agressivo">Agressivo</option>
+                            </select>
+                            <small>Define o fator de segurança usado nos cálculos de receita.</small>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit">Salvar Metas</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
     </div>
-    
-    <!-- ATENÇÃO: Configuração do Firebase - PREENCHA COM SUAS CHAVES -->
-    <script src="/js/firebase-config.js"></script>
 
-    <!-- Script Principal da Aplicação -->
+    <script src="/js/firebase-config.js"></script>
     <script src="/js/main.js"></script>
 </body>
 </html>

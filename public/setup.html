@@ -3,48 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuração Inicial - SupportingBases</title>
+    <title>Configuração da Conta - SupportingBases</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-    <div id="main-container" class="setup-container" style="display: none;">
-        <div id="auth-loader">Carregando seus dados...</div>
+    <div id="auth-loader"><div class="loader"></div></div>
 
-        <div id="profile-selection-step">
+    <div class="container" id="main-container" style="display: none;">
+        <header class="content-header">
             <h1>Configuração da Conta</h1>
-            <p>Para um diagnóstico preciso, por favor, escolha o perfil que melhor descreve sua principal fonte de renda.</p>
-            
-            <div class="profile-selection">
-                <div class="profile-card" data-profile="pessoa_fisica">
-                    <h3>Pessoa Física</h3>
-                    <p>Sua principal fonte de renda é um salário ou valor previsível.</p>
-                </div>
-                <div class="profile-card" data-profile="autonomo">
-                    <h3>Autônomo / Liberal</h3>
-                    <p>Sua renda varia a cada mês com base nos seus projetos ou clientes.</p>
-                </div>
-                <div class="profile-card" data-profile="empresa">
-                    <h3>Pequena Empresa</h3>
-                    <p>Você gerencia um negócio com faturamento, custos e despesas operacionais.</p>
-                </div>
-            </div>
-        </div>
+            <p>Para um diagnóstico preciso, por favor, preencha os dados abaixo.</p>
+        </header>
 
-        <div id="data-entry-step" class="hidden">
-            <!-- Formulários específicos do perfil serão injetados aqui via JS -->
-        </div>
+        <div class="card">
+            <form id="onboarding-form">
+                <div class="form-group">
+                    <label for="fullName">Nome Completo</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="Seu nome completo" required>
+                </div>
 
+                <div class="form-group">
+                    <label for="birthDate">Data de Nascimento</label>
+                    <input type="date" id="birthDate" name="birthDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="country">País de Residência</label>
+                    <input type="text" id="country" name="country" placeholder="Ex: Brasil" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile">Perfil de Renda</label>
+                    <select id="profile" name="profile" required>
+                        <option value="" disabled selected>Selecione seu perfil</option>
+                        <option value="pessoa_fisica">Pessoa Física (Salário / Renda Fixa)</option>
+                        <option value="autonomo">Autônomo / Profissional Liberal</option>
+                        <option value="empresa">Pequena Empresa</option>
+                    </select>
+                    <small>Isso nos ajuda a personalizar a análise da sua estrutura financeira.</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Salvar e Iniciar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
-    <!-- ATENÇÃO: Configuração do Firebase - PREENCHA COM SUAS CHAVES -->
+    <!-- Configuração do Firebase -->
     <script src="/js/firebase-config.js"></script>
 
-    <!-- Script Principal da Aplicação -->
+    <!-- Script Principal -->
     <script src="/js/main.js"></script>
 </body>
 </html>
