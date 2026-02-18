@@ -1,22 +1,25 @@
 // =====================================================================================
-// ATENÇÃO: ARQUIVO DE CONFIGURAÇÃO DO FIREBASE
+// ARQUIVO DE CONFIGURAÇÃO DO FIREBASE
 // =====================================================================================
-//
-// POR FAVOR, SUBSTITUA AS CHAVES ABAIXO PELAS CHAVES DO SEU PROJETO FIREBASE.
-//
-// Você pode encontrar essas chaves no console do Firebase do seu projeto:
-// (Engrenagem) > Configurações do Projeto > Geral > Seus aplicativos > Aplicativo da Web
-//
+// A única responsabilidade deste arquivo é obter a configuração do servidor.
+// A inicialização do App ocorrerá no firebaseService.js
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyD5jRAKuSwthbmTApCO1NIXq31Z9PagMf8",
-  authDomain: "supportingbases-94551271-9f34b.firebaseapp.com",
-  projectId: "supportingbases-94551271-9f34b",
-  storageBucket: "supportingbases-94551271-9f34b.appspot.com", // Corrigido de .firebasestorage.app para .appspot.com, que é o padrão mais comum
-  messagingSenderId: "688483394625",
-  appId: "1:688483394625:web:c03f6dffb1c24b7337d2c0"
-};
+// Esta função busca a configuração do Firebase do servidor e a torna disponível globalmente.
+async function fetchFirebaseConfig() {
+  try {
+    const response = await fetch('/api/firebase-config');
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const config = await response.json();
+    // Torna a configuração disponível globalmente para outros scripts
+    window.firebaseConfig = config;
+    console.log('Firebase config loaded successfully.');
+  } catch (error) {
+    console.error('Failed to fetch Firebase config:', error);
+    // Você pode querer lidar com este erro de forma mais robusta
+  }
+}
 
-// Inicializa o Firebase com as configurações acima
-firebase.initializeApp(firebaseConfig);
+// Inicia o processo de busca da configuração assim que o script for carregado.
+fetchFirebaseConfig();

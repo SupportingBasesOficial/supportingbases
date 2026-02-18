@@ -1,44 +1,50 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - SupportingBases</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-    <!-- Scripts do Firebase - Carregados primeiro -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <!-- Scripts da Aplicação - Deferidos para executar após o HTML -->
-    <script src="js/firebase-config.js" defer></script>
-    <script src="js/auth.js" defer></script>
+    <title>Crie sua Conta - SupportingBases</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css">
+    <link rel="stylesheet" href="/css/styles.v3.css">
 </head>
 <body>
     <div class="auth-container">
-        <div class="auth-header">
-            <a href="index.html" class="logo-link">
-                <img src="/assets/logo.svg" alt="SupportingBases Logo">
-            </a>
-        </div>
         <div class="auth-card">
-            <h1>Criar Conta</h1>
-            <p>Junte-se à nossa comunidade e fortaleça sua estrutura.</p>
+            <img src="/assets/logo.svg" alt="Logo SupportingBases" class="logo">
+            <h1>Crie sua Conta</h1>
+            <p>Comece sua jornada para uma vida financeira mais saudável.</p>
+
             <form id="register-form">
                 <div class="form-group">
-                    <label for="email">Seu melhor e-mail</label>
-                    <input type="email" id="email" name="email" required>
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Crie uma senha forte</label>
-                    <input type="password" id="password" name="password" required>
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
                 </div>
-                <button type="submit">Criar Conta</button>
+                <div class="form-group">
+                    <label for="password-confirm">Confirme a Senha</label>
+                    <input type="password" id="password-confirm" name="password-confirm" placeholder="Repita a senha" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block">Criar Conta</button>
+                </div>
             </form>
-             <div class="auth-links">
-                <span>Já tem uma conta? <a href="login.html">Faça login</a></span>
+
+            <div class="auth-footer">
+                <p>Já tem uma conta? <a href="/login.html">Faça login</a></p>
             </div>
         </div>
     </div>
+
+    <!-- Scripts carregados em ordem sequencial -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/firebaseService.js"></script>
+    <script src="/js/register.js"></script>
+
 </body>
 </html>

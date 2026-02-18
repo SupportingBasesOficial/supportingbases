@@ -1,49 +1,53 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SupportingBases</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-    <!-- Scripts do Firebase - Carregados primeiro -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <!-- Scripts da Aplicação - Deferidos para executar após o HTML -->
-    <script src="js/firebase-config.js" defer></script>
-    <script src="js/auth.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css">
+    <link rel="stylesheet" href="/css/styles.v3.css">
 </head>
 <body>
     <div class="auth-container">
-        <div class="auth-header">
-             <a href="index.html" class="logo-link">
-                <img src="/assets/logo.svg" alt="SupportingBases Logo">
-            </a>
-        </div>
         <div class="auth-card">
-            <h1>Entrar</h1>
-            <p>Bem-vindo de volta! Acesse sua conta para continuar.</p>
+            <img src="/assets/logo.svg" alt="Logo SupportingBases" class="logo">
+            <h1>Login</h1>
+            <p>Bem-vindo(a) de volta! Acesse sua conta.</p>
+
             <form id="login-form">
                 <div class="form-group">
-                    <label for="email">Seu e-mail</label>
-                    <input type="email" id="email" name="email" placeholder="exemplo@email.com" required>
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
-                     <label for="password">Sua senha</label>
+                    <label for="password">Senha</label>
                     <input type="password" id="password" name="password" placeholder="Sua senha" required>
                 </div>
-                <button type="submit">Entrar</button>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </div>
             </form>
-            <div class="auth-links">
-                <span>Não tem uma conta? <a href="register.html">Cadastre-se</a></span>
-                <span class="separator">|</span>
-                <a href="forgot-password.html">Esqueceu sua senha?</a>
-            </div>
-             <div class="auth-footer-link">
-                <a href="index.html">Voltar para a página inicial</a>
+
+            <div class="auth-footer">
+                <p><a href="/forgot-password.html">Esqueceu a senha?</a></p>
+                <p>Não tem uma conta? <a href="/register.html">Crie uma agora</a></p>
             </div>
         </div>
     </div>
+
+    <!-- Scripts carregados em ordem sequencial (sem type="module") -->
+
+    <!-- 1. SDKs do Firebase (v8 compatibilidade) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- 2. Configuração e Serviços Locais -->
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/firebaseService.js"></script>
+    
+    <!-- 3. Script da Página -->
+    <script src="/js/login.js"></script>
+
 </body>
 </html>
