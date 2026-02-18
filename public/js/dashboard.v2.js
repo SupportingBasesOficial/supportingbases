@@ -1,4 +1,5 @@
-// Versão Clássica (sem módulos) do dashboard.js
+
+// --- CORE APPLICATION LOGIC (V3 - DECOUPLED) ---
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeUI();
@@ -6,12 +7,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let userId = null;
     let unsubscribeTransactions = null;
+    let recommendations = null; // Cache for recommendations
 
+    // Fetch recommendations once on load
+    fetch('js/recommendations.json')
+        .then(response => response.json())
+        .then(data => {
+            recommendations = data;
+        })
+        .catch(error => console.error("Failed to load recommendations:", error));
+
+    // Main authentication and data loading sequence
     onAuthStateChange(async (user) => {
         if (user) {
             userId = user.uid;
             try {
-                // --- CORREÇÃO CRÍTICA: Trocando a FUNÇÃO .exists() pela PROPRIEDADE .exists ---
+                // Check for user profile and onboarding completion
                 const userDoc = await getDocument('users', userId);
                 if (!userDoc.exists || !userDoc.data().onboardingCompleted) {
                     window.location.href = 'setup.html';
@@ -19,94 +30,97 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const profileDoc = await getDocument(`users/${userId}/structural_data`, 'user_profile');
-                
-                // --- MELHORIA: Se o perfil não existe, cria um e recarrega a página ---
-                if (!profileDoc.exists) {
-                    // Isso pode acontecer se o processo de setup for interrompido.
-                    // Criamos um perfil básico para evitar que a aplicação quebre.
-                    const basicProfile = {
-                        fullName: user.email, // Usa o email como fallback
-                        birthDate: 'Não informado',
-                        monthlyIncome: 0
-                    };
-                    await setDocument(`users/${userId}/structural_data`, 'user_profile', basicProfile);
-                    window.location.reload(); // Recarrega a página para carregar o novo perfil.
-                    return;
-                }
+                showDashboard(profileDoc.data()); // Display user profile info
 
-                showDashboard(profileDoc.data());
-                clearTransactionForm();
-
+                // Listen for real-time updates on transactions
                 const transactionsPath = `users/${userId}/transactions`;
                 unsubscribeTransactions = onSnapshot(transactionsPath, (transactions) => {
                     renderTransactions(transactions);
-                    const metrics = calculateStructuralMetrics(transactions);
-                    renderDiagnosisResults(metrics);
+                    // Whenever transactions change, trigger a new diagnosis from the backend
+                    runBackendDiagnosis(transactions, profileDoc.data());
                 });
 
             } catch (error) {
-                console.error("Erro ao carregar o dashboard:", error);
-                alert("Não foi possível carregar seus dados. Por favor, tente recarregar a página.");
+                console.error("Dashboard Loading Error:", error);
+                alert("Could not load dashboard data. Please reload.");
                 showLoader(false);
             }
         } else {
+            // User is signed out
             userId = null;
-            if (unsubscribeTransactions) {
-                unsubscribeTransactions();
-            }
+            if (unsubscribeTransactions) unsubscribeTransactions();
             window.location.href = 'login.html';
         }
     });
 
-    // O resto do arquivo permanece o mesmo...
-    // (listeners de formulário, delete, e logout)
+    /**
+     * Triggers the backend diagnosis engine and renders the results.
+     * @param {Array<object>} transactions - The user's transactions.
+     * @param {object} profile - The user's profile data.
+     */
+    async function runBackendDiagnosis(transactions, profile) {
+        // Prepare the data payload for the API
+        const financialData = {
+            incomes: transactions.filter(t => t.type === 'revenue').map(t => ({ amount: t.amount })),
+            expenses: transactions.filter(t => t.type === 'expense').map(t => ({ amount: t.amount, priority: t.category === 'essential' ? 'essential' : 'non_essential' })),
+            liquid_assets: profile.liquid_assets || 0
+        };
 
+        try {
+            const response = await fetch('/api/engine/diagnose', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(financialData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.statusText}`);
+            }
+
+            const diagnosis = await response.json();
+            renderDiagnosisResults(diagnosis, recommendations);
+
+        } catch (error) {
+            console.error("Error running backend diagnosis:", error);
+            // Optionally, render an error state in the diagnosis panel
+        }
+    }
+
+    // --- UI EVENT LISTENERS ---
+    
+    // Transaction form submission
     if (window.transactionForm) {
         window.transactionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!userId) return;
+            // Logic to add document remains the same...
             const description = document.getElementById('description').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const type = document.getElementById('type').value;
             const date = document.getElementById('date').value;
             const category = document.getElementById('category').value;
-
+            
             if (description && !isNaN(amount) && type && date && category) {
-                try {
-                    await addDocument(`users/${userId}/transactions`, { description, amount, type, date, category });
-                    clearTransactionForm();
-                } catch (error) {
-                    console.error("Erro ao adicionar lançamento:", error);
-                }
+                await addDocument(`users/${userId}/transactions`, { description, amount, type, date, category });
+                clearTransactionForm();
             }
         });
     }
 
+    // Transaction deletion
     if (window.transactionList) {
         window.transactionList.addEventListener('click', async (e) => {
             const deleteButton = e.target.closest('.delete-btn');
-            if (deleteButton && userId) {
+            if (deleteButton && userId && confirm('Are you sure?')) {
                 const transactionId = deleteButton.closest('tr').dataset.id;
-                if (confirm('Tem certeza?')) {
-                    try {
-                        await deleteDocument(`users/${userId}/transactions/${transactionId}`);
-                    } catch (error) {
-                        console.error("Erro ao excluir:", error);
-                    }
-                }
+                await deleteDocument(`users/${userId}/transactions/${transactionId}`);
             }
         });
     }
 
+    // Logout
     const logoutButton = document.getElementById('logout-btn');
     if (logoutButton) {
-        logoutButton.addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                await logOut();
-            } catch (error) {
-                console.error("Erro ao fazer logout:", error);
-            }
-        });
+        logoutButton.addEventListener('click', () => logOut());
     }
 });

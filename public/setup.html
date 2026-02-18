@@ -1,48 +1,93 @@
+
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuração da Conta - SupportingBases</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css">
-    <link rel="stylesheet" href="/css/styles.v3.css">
+    <title>Configuração Inicial - SupportingBases</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body>
-    <div id="auth-loader"><div class="loader"></div></div>
+    <div class="auth-container">
+        <div class="auth-box">
+            <h1>Configuração do Perfil</h1>
+            <p>Preencha os dados iniciais para calibrarmos sua análise. Estes dados são essenciais para a precisão dos cálculos.</p>
 
-    <div class="auth-container" id="main-container" style="display: none;">
-        <div class="auth-card">
-            <img src="/assets/logo.svg" alt="Logo SupportingBases" class="logo">
-            <h1>Quase lá!</h1>
-            <p>Precisamos de mais algumas informações para personalizar sua experiência.</p>
+            <div id="loader">Carregando formulário...</div>
+            <div id="error-message" class="error-message" style="display: none;"></div>
 
-            <form id="setup-form">
-                <div class="form-group">
-                    <label for="fullName">Nome Completo</label>
-                    <input type="text" id="fullName" name="fullName" placeholder="Seu nome completo" required>
+            <!-- Formulário para Pessoa Física -->
+            <form id="setup-form-pessoa_fisica" class="setup-form" style="display: none;">
+                <h2>Perfil: Pessoa Física</h2>
+                <div class="input-group">
+                    <label for="pf-fullName">Nome Completo</label>
+                    <input type="text" id="pf-fullName" required>
                 </div>
-                <div class="form-group">
-                    <label for="birthDate">Data de Nascimento</label>
-                    <input type="date" id="birthDate" name="birthDate" required>
+                <div class="input-group">
+                    <label for="pf-birthDate">Data de Nascimento</label>
+                    <input type="date" id="pf-birthDate" required>
                 </div>
-                <div class="form-group">
-                    <label for="monthlyIncome">Renda Mensal (R$)</label>
-                    <input type="number" id="monthlyIncome" name="monthlyIncome" placeholder="Ex: 3500.00" step="0.01" required>
+                <div class="input-group">
+                    <label for="pf-liquid_assets">Reserva de Emergência (R$)</label>
+                    <input type="number" id="pf-liquid_assets" placeholder="Valor atual da sua reserva" required min="0">
                 </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-block">Salvar e Ir para o Dashboard</button>
-                </div>
+                <button type="submit" class="btn-primary">Salvar e Ir para o Dashboard</button>
             </form>
+
+            <!-- Formulário para Autônomo -->
+            <form id="setup-form-autonomo" class="setup-form" style="display: none;">
+                <h2>Perfil: Autônomo</h2>
+                <div class="input-group">
+                    <label for="autonomo-fullName">Nome Completo</label>
+                    <input type="text" id="autonomo-fullName" required>
+                </div>
+                 <div class="input-group">
+                    <label for="autonomo-field">Área de Atuação</label>
+                    <input type="text" id="autonomo-field" placeholder="Ex: Designer, Desenvolvedor, Advogado" required>
+                </div>
+                <div class="input-group">
+                    <label for="autonomo-formalization">Nível de Formalização</label>
+                    <select id="autonomo-formalization">
+                        <option value="informal">Informal</option>
+                        <option value="mei">MEI (Microempreendedor Individual)</option>
+                        <option value="me">ME (Microempresa)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="autonomo-liquid_assets">Caixa Atual (Pessoal + Negócio) (R$)</label>
+                    <input type="number" id="autonomo-liquid_assets" placeholder="Soma de todas as contas" required min="0">
+                </div>
+                <button type="submit" class="btn-primary">Salvar e Ir para o Dashboard</button>
+            </form>
+
+            <!-- Formulário para Empresa -->
+            <form id="setup-form-empresa" class="setup-form" style="display: none;">
+                <h2>Perfil: Empresa</h2>
+                <div class="input-group">
+                    <label for="empresa-companyName">Nome da Empresa</label>
+                    <input type="text" id="empresa-companyName" required>
+                </div>
+                <div class="input-group">
+                    <label for="empresa-cnpj">CNPJ</label>
+                    <input type="text" id="empresa-cnpj" required>
+                </div>
+                <div class="input-group">
+                    <label for="empresa-market">Setor de Atuação</label>
+                    <input type="text" id="empresa-market" placeholder="Ex: Varejo, Tecnologia, Serviços" required>
+                </div>
+                <div class="input-group">
+                    <label for="empresa-liquid_assets">Caixa da Empresa (R$)</label>
+                    <input type="number" id="empresa-liquid_assets" placeholder="Valor em caixa e contas bancárias" required min="0">
+                </div>
+                <button type="submit" class="btn-primary">Salvar e Ir para o Dashboard</button>
+            </form>
+
         </div>
     </div>
 
-    <!-- Scripts carregados em ordem sequencial -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="/js/firebase-config.js"></script>
-    <script src="/js/firebaseService.js"></script>
+    <script src="/js/firebase-init.js"></script>
+    <script src="/js/auth.js"></script>
     <script src="/js/setup.js"></script>
-
 </body>
 </html>

@@ -1,67 +1,106 @@
-// Versão Clássica (sem módulos) do setup.js
+
+// --- DYNAMIC SETUP LOGIC ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    const loader = document.getElementById('auth-loader');
-    const mainContainer = document.getElementById('main-container');
+    const loader = document.getElementById('loader');
+    const errorMessage = document.getElementById('error-message');
 
-    onAuthStateChange(async (user) => {
+    const forms = {
+        pessoa_fisica: document.getElementById('setup-form-pessoa_fisica'),
+        autonomo: document.getElementById('setup-form-autonomo'),
+        empresa: document.getElementById('setup-form-empresa')
+    };
+
+    let currentForm = null;
+    let userId = null;
+
+    // Main logic execution
+    onAuthStateChange(user => {
         if (user) {
-            try {
-                // Busca o documento do usuário para verificar se o onboarding já foi feito.
-                const userDoc = await getDocument('users', user.uid);
-
-                if (userDoc.exists && userDoc.data().onboardingCompleted) {
-                    // Se o onboarding já foi feito, redireciona para o dashboard.
-                    window.location.href = 'dashboard.html';
-                    return;
-                }
-                
-                // Esconde o loader e mostra o formulário
-                if (loader) loader.style.display = 'none';
-                if (mainContainer) mainContainer.style.display = 'block';
-
-                // --- CORREÇÃO PRINCIPAL: Usa o ID correto do formulário ('setup-form') ---
-                const setupForm = document.getElementById('setup-form');
-
-                if (setupForm) {
-                    setupForm.addEventListener('submit', async (e) => {
-                        e.preventDefault(); // Impede o recarregamento da página
-                        const submitButton = setupForm.querySelector('button[type="submit"]');
-                        submitButton.disabled = true;
-                        submitButton.textContent = 'Salvando...';
-
-                        try {
-                            // --- CORREÇÃO PRINCIPAL: Coleta dados dos campos corretos do HTML ---
-                            const profileData = {
-                                fullName: setupForm.fullName.value,
-                                birthDate: setupForm.birthDate.value,
-                                monthlyIncome: parseFloat(setupForm.monthlyIncome.value) || 0,
-                                onboardingCompleted: true // Marca o onboarding como concluído
-                            };
-                            
-                            // Salva os dados no documento do usuário, mesclando com dados existentes.
-                            await setDocument('users', user.uid, profileData, true);
-
-                            // Redireciona para o dashboard após o sucesso.
-                            window.location.href = 'dashboard.html';
-
-                        } catch (error) {
-                            console.error("Erro ao salvar dados do setup: ", error);
-                            alert('Ocorreu um erro ao salvar suas informações. Tente novamente.');
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Salvar e Ir para o Dashboard';
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('Erro crítico no processo de setup: ', error);
-                if (loader) loader.style.display = 'none';
-                alert('Houve um erro ao verificar sua conta. Por favor, tente fazer o login novamente.');
-                window.location.href = 'login.html';
-            }
+            userId = user.uid;
+            initializeForm(user);
         } else {
-            // Se não há usuário logado, volta para a página de login.
             window.location.href = 'login.html';
         }
     });
+
+    /**
+     * Initializes and displays the correct form based on the URL parameter.
+     */
+    function initializeForm(user) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileType = urlParams.get('type');
+
+        if (profileType && forms[profileType]) {
+            currentForm = forms[profileType];
+            loader.style.display = 'none';
+            currentForm.style.display = 'block';
+            currentForm.addEventListener('submit', (e) => handleFormSubmit(e, profileType, user));
+        } else {
+            showError("Tipo de perfil inválido ou não especificado. Redirecionando...");
+            setTimeout(() => window.location.href = 'type-selection.html', 3000);
+        }
+    }
+
+    /**
+     * Handles the form submission, collects data, and saves it to Firestore.
+     */
+    async function handleFormSubmit(event, profileType, user) {
+        event.preventDefault();
+        const submitButton = currentForm.querySelector('button[type="submit"]');
+        setButtonLoading(submitButton, true, 'Salvando...');
+
+        let profileData = {};
+
+        // Collect data based on the active form
+        try {
+            if (profileType === 'pessoa_fisica') {
+                profileData = {
+                    fullName: document.getElementById('pf-fullName').value,
+                    birthDate: document.getElementById('pf-birthDate').value,
+                    liquid_assets: parseFloat(document.getElementById('pf-liquid_assets').value)
+                };
+            } else if (profileType === 'autonomo') {
+                profileData = {
+                    fullName: document.getElementById('autonomo-fullName').value,
+                    field: document.getElementById('autonomo-field').value,
+                    formalization: document.getElementById('autonomo-formalization').value,
+                    liquid_assets: parseFloat(document.getElementById('autonomo-liquid_assets').value)
+                };
+            } else if (profileType === 'empresa') {
+                profileData = {
+                    companyName: document.getElementById('empresa-companyName').value,
+                    cnpj: document.getElementById('empresa-cnpj').value,
+                    market: document.getElementById('empresa-market').value,
+                    liquid_assets: parseFloat(document.getElementById('empresa-liquid_assets').value)
+                };
+            }
+
+            // Save the structured data
+            await setDocument(`users/${user.uid}/structural_data`, 'user_profile', profileData);
+
+            // Mark onboarding as complete
+            await updateDocument('users', user.uid, { onboardingCompleted: true });
+
+            // Redirect to the main dashboard
+            window.location.href = 'dashboard.html';
+
+        } catch (error) {
+            console.error("Setup Error:", error);
+            showError("Falha ao salvar os dados. Por favor, verifique os campos e tente novamente.");
+            setButtonLoading(submitButton, false, 'Salvar e Ir para o Dashboard');
+        }
+    }
+
+    // --- Helper Functions ---
+    function setButtonLoading(button, isLoading, text) {
+        button.disabled = isLoading;
+        button.textContent = text;
+    }
+
+    function showError(message) {
+        loader.style.display = 'none';
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+    }
 });

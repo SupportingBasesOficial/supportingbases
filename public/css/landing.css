@@ -1,145 +1,237 @@
-/* --- Landing Page: Container --- */
-.landing-container {
-    max-width: 1100px;
+
+/* --- LANDING PAGE STYLES --- */
+:root {
+    --primary-color: #8a5cf5; /* Um roxo vibrante */
+    --primary-hover: #7c4ee3;
+    --dark-bg: #111827; /* Um azul quase preto */
+    --dark-card-bg: #1f2937;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 2rem;
 }
 
-/* --- Landing Page: Header --- */
-.landing-header {
-    background: #fff;
-    padding: 20px 0;
-    border-bottom: 1px solid #E2E8F0;
+/* --- HEADER --- */
+.main-header {
+    background-color: var(--dark-bg);
+    padding: 1rem 0;
+    border-bottom: 1px solid #374151;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.landing-header .landing-container {
+.main-header .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.logo-container .logo {
-    height: 40px;
-    width: auto;
+.logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-color);
 }
 
-.landing-nav {
+.main-header nav {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 1.5rem;
 }
 
-/* --- Landing Page: Hero Section --- */
-.hero-section {
-    padding: 80px 0;
-    background-color: #fff;
+.main-header nav a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: color 0.2s;
 }
 
-.hero-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+.main-header nav a:hover {
+    color: var(--text-primary);
+}
+
+/* --- BUTTONS --- */
+.btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(138, 92, 245, 0.3);
+}
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+.btn-secondary:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+.btn-lg {
+    font-size: 1.1rem;
+    padding: 0.8rem 1.8rem;
+}
+
+
+/* --- HERO SECTION --- */
+.hero {
+    padding: 6rem 0;
+    text-align: center;
+}
+
+.hero .container {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 60px;
 }
 
-.hero-text .subtitle {
+.hero-content h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    max-width: 800px;
+    margin: 0 auto 1rem auto;
+}
+
+.hero-content .subtitle {
     font-size: 1.25rem;
-    color: #718096; /* Cinza médio */
-    margin-bottom: 2rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto 2.5rem auto;
 }
 
-.hero-cta {
-    margin-top: 2rem;
-}
-
-.hero-cta .cta-subtext {
-    font-size: 0.875rem;
-    color: #A0AEC0; /* Cinza claro */
-    margin-top: 0.5rem;
+.hero-image {
+    margin-top: 3rem;
 }
 
 .hero-image img {
-    width: 100%;
-    max-width: 500px;
-    height: auto;
-    border-radius: 8px;
+    max-width: 100%;
+    width: 800px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* --- Landing Page: Features Section --- */
-.features-section {
-    padding: 80px 0;
+/* --- FEATURES SECTION --- */
+.features {
+    padding: 5rem 0;
+    background-color: var(--dark-card-bg);
 }
 
-.section-title {
+.section-header {
     text-align: center;
-    margin-bottom: 4rem;
+    max-width: 700px;
+    margin: 0 auto 3rem auto;
+}
+
+.section-header h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
 }
 
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
 }
 
 .feature-item {
+    background-color: var(--dark-bg);
+    padding: 2rem;
+    border-radius: 8px;
     text-align: center;
+    border: 1px solid #374151;
 }
 
-.feature-icon {
-    margin-bottom: 1.5rem;
-    height: 60px; /* Altura unificada para os ícones */
+.feature-item img {
+    height: 50px;
+    margin-bottom: 1rem;
+}
+
+.feature-item h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* --- HOW IT WORKS SECTION --- */
+.how-it-works {
+    padding: 5rem 0;
+}
+
+.steps {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
+    gap: 2rem;
 }
 
-.feature-icon img {
-    max-height: 100%;
-}
-
-.feature-item p {
-    color: #718096;
-}
-
-/* --- Landing Page: Footer --- */
-.landing-footer {
-    background-color: #1A202C;
-    color: #A0AEC0;
-    padding: 40px 0;
+.step {
     text-align: center;
-    margin-top: 60px;
+    max-width: 300px;
 }
 
-/* --- Responsividade da Landing Page --- */
-@media (max-width: 992px) {
-    .hero-layout {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-    
-    .hero-text {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .hero-image {
-        order: -1; /* Move a imagem para cima no mobile */
-        margin-bottom: 40px;
-    }
-
-    .features-grid {
-        grid-template-columns: 1fr;
-        gap: 50px;
-    }
+.step-number {
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
 }
 
+.step-arrow {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+/* --- FOOTER --- */
+.main-footer {
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 4rem;
+    border-top: 1px solid #374151;
+    color: var(--text-secondary);
+}
+
+/* --- RESPONSIVE --- */
 @media (max-width: 768px) {
-    .landing-header .landing-container {
-        flex-direction: column;
-        gap: 20px;
+    .main-header nav {
+        display: none; /* Simple hide for mobile, can be replaced with a hamburger menu */
     }
-
-    .hero-section, .features-section {
-        padding: 60px 0;
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+    .steps {
+        flex-direction: column;
+    }
+    .step-arrow {
+        transform: rotate(90deg);
+        margin: 1rem 0;
     }
 }

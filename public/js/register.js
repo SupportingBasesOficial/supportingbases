@@ -1,3 +1,4 @@
+
 // Versão Clássica (sem módulos) do register.js
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -5,15 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!registerForm) return;
 
     const displayMessage = (message, type) => {
-        const container = document.querySelector('.auth-card');
-        let messageBox = container.querySelector('.auth-message');
+        const container = document.querySelector('.auth-box'); // Updated selector
+        let messageBox = container.querySelector('.error-message'); // Updated selector
         if (!messageBox) {
             messageBox = document.createElement('div');
-            messageBox.className = 'auth-message';
+            messageBox.className = 'error-message';
             container.insertBefore(messageBox, registerForm);
         }
         messageBox.textContent = message;
-        messageBox.className = `auth-message ${type}`;
+        messageBox.style.display = 'block';
+        messageBox.style.color = type === 'error' ? '#f87171' : '#34d399';
     };
 
     const setButtonLoading = (button, isLoading, originalText) => {
@@ -44,9 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // As funções signUp e setDocument agora estão disponíveis globalmente
             await signUp(email, password);
             
-            // A lógica de criação do documento foi movida para setup.js.
-            // Apenas redirecionamos.
-            window.location.href = 'setup.html';
+            // --- CRITICAL CHANGE --- 
+            // Redirect to the profile type selection page after successful registration.
+            window.location.href = 'type-selection.html';
 
         } catch (error) {
             let friendlyMessage = "Ocorreu um erro desconhecido.";
