@@ -5,70 +5,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selecione seu Perfil - SupportingBases</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/auth.css">
-    <style>
-        .profile-selection-container {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-        }
-        .profile-card {
-            background-color: #2c2c3e;
-            padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            width: 250px;
-            border: 1px solid #444;
-        }
-        .profile-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(138, 92, 245, 0.3);
-            border-color: #8a5cf5;
-        }
-        .profile-card h3 {
-            margin-top: 0;
-            color: #f0f0f0;
-        }
-        .profile-card p {
-            font-size: 0.9rem;
-            color: #a0a0b0;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/styles.v3.css">
 </head>
 <body>
     <div class="auth-container">
-        <div class="auth-box">
-            <h1>Qual perfil melhor descreve você?</h1>
-            <p>Sua escolha nos ajudará a personalizar sua experiência e a análise financeira.</p>
-            
-            <div id="loading-indicator" style="display: none;">Carregando...</div>
+        <div class="auth-card text-center">
+            <img src="/assets/logo.svg" alt="Logo SupportingBases" class="logo">
+            <h1>Qual perfil você se encaixa?</h1>
+            <p>Essa escolha nos ajudará a personalizar sua experiência e as análises financeiras.</p>
 
-            <div class="profile-selection-container">
-                <div class="profile-card" data-type="pessoa_fisica">
+            <div class="profile-selection">
+                <a href="/setup.html?type=pessoa_fisica" class="profile-card">
+                    <i class="fas fa-user"></i>
                     <h3>Pessoa Física</h3>
-                    <p>Para quem deseja organizar as finanças pessoais, criar uma reserva de segurança e planejar o futuro.</p>
-                </div>
-                <div class="profile-card" data-type="autonomo">
-                    <h3>Autônomo</h3>
-                    <p>Para profissionais liberais e freelancers que precisam gerenciar a variabilidade da receita e separar as contas pessoais das profissionais.</p>
-                </div>
-                <div class="profile-card" data-type="empresa">
-                    <h3>Empresa</h3>
-                    <p>Para negócios estabelecidos que buscam otimizar custos, aumentar a robustez financeira e planejar a expansão.</p>
-                </div>
+                    <p>Para quem busca organizar as finanças pessoais e construir patrimônio.</p>
+                </a>
+                <a href="/setup.html?type=autonomo" class="profile-card">
+                    <i class="fas fa-briefcase"></i>
+                    <h3>Autônomo/Profissional Liberal</h3>
+                    <p>Para quem trabalha por conta própria e precisa gerir as finanças pessoais e do negócio.</p>
+                </a>
+                <a href="/setup.html?type=empresa" class="profile-card">
+                    <i class="fas fa-building"></i>
+                    <h3>Pequena Empresa</h3>
+                    <p>Para quem busca gerenciar o fluxo de caixa e a saúde financeira de um negócio estabelecido.</p>
+                </a>
             </div>
 
-            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div class="auth-footer">
+                <p><a href="#" id="logout-btn">Sair</a></p>
+            </div>
         </div>
     </div>
 
-    <script src="/js/firebase-init.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/type-selection.js"></script>
+    <!-- Scripts Essenciais -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/firebaseService.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Protege a página: se o usuário não estiver logado, volta para o login.
+            onAuthStateChange(user => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                }
+            });
+
+            // Adiciona funcionalidade de logout ao botão
+            const logoutButton = document.getElementById('logout-btn');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logOut().then(() => {
+                        window.location.href = 'login.html';
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

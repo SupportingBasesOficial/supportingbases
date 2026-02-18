@@ -48,7 +48,7 @@ const calculateStdDev = (data) => {
  * @param {number} financialData.liquid_assets - Total emergency reserves.
  * @returns {object} A JSON object containing the calculated financial metrics.
  */
-function calculateAllMetrics({ incomes, expenses, liquid_assets }) {
+export function calculateAllMetrics({ incomes, expenses, liquid_assets }) {
 
   if (!incomes || !expenses || liquid_assets === undefined) {
     throw new Error('Missing required fields: incomes, expenses, liquid_assets.');
@@ -119,6 +119,3 @@ function calculateAllMetrics({ incomes, expenses, liquid_assets }) {
 
   return results;
 }
-
-// Export the core function to be used by other parts of the application.
-module.exports = { calculateAllMetrics };

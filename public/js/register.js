@@ -1,30 +1,31 @@
 
-// Versão Clássica (sem módulos) do register.js
-
 document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('register-form');
     if (!registerForm) return;
 
-    const displayMessage = (message, type) => {
-        const container = document.querySelector('.auth-box'); // Updated selector
-        let messageBox = container.querySelector('.error-message'); // Updated selector
+    const displayMessage = (message, type = 'error') => {
+        const container = document.querySelector('.auth-card');
+        if (!container) return;
+
+        let messageBox = container.querySelector('.form-message');
         if (!messageBox) {
             messageBox = document.createElement('div');
-            messageBox.className = 'error-message';
-            container.insertBefore(messageBox, registerForm);
+            messageBox.className = 'form-message';
+            container.insertBefore(messageBox, registerForm.querySelector('.form-actions'));
         }
+        
         messageBox.textContent = message;
+        messageBox.className = `form-message ${type}`;
         messageBox.style.display = 'block';
-        messageBox.style.color = type === 'error' ? '#f87171' : '#34d399';
     };
 
     const setButtonLoading = (button, isLoading, originalText) => {
         if (isLoading) {
             button.disabled = true;
-            button.textContent = 'Criando conta...';
+            button.innerHTML = '<span class="loader-sm"></span> Criando conta...';
         } else {
             button.disabled = false;
-            button.textContent = originalText;
+            button.innerHTML = originalText;
         }
     };
 
@@ -32,26 +33,39 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const email = registerForm.email.value;
         const password = registerForm.password.value;
+        const passwordConfirm = document.getElementById('password-confirm').value;
+
         const submitButton = registerForm.querySelector('button[type="submit"]');
         const originalButtonText = 'Criar Conta';
 
+        displayMessage('', 'success'); // Limpa mensagens anteriores
+
+        if (password !== passwordConfirm) {
+            displayMessage("As senhas não coincidem.");
+            return;
+        }
         if (password.length < 6) {
-            displayMessage("A senha precisa ter no mínimo 6 caracteres.", "error");
+            displayMessage("A senha precisa ter no mínimo 6 caracteres.");
             return;
         }
 
         setButtonLoading(submitButton, true, originalButtonText);
 
         try {
-            // As funções signUp e setDocument agora estão disponíveis globalmente
-            await signUp(email, password);
+            const userCredential = await signUp(email, password);
+            const userId = userCredential.user.uid;
+
+            await setDocument('users', userId, {
+                email: email,
+                onboardingCompleted: false,
+                createdAt: new Date()
+            });
             
-            // --- CRITICAL CHANGE --- 
-            // Redirect to the profile type selection page after successful registration.
+            // O redirecionamento acontecerá, então não precisamos reativar o botão aqui.
             window.location.href = 'type-selection.html';
 
         } catch (error) {
-            let friendlyMessage = "Ocorreu um erro desconhecido.";
+            let friendlyMessage = "Ocorreu um erro desconhecido ao criar a conta.";
             switch (error.code) {
                 case 'auth/email-already-in-use':
                     friendlyMessage = "Este endereço de e-mail já está em uso.";
@@ -60,13 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     friendlyMessage = "O e-mail fornecido não é válido.";
                     break;
                 case 'auth/weak-password':
-                    friendlyMessage = "A senha é muito fraca. Tente uma mais forte.";
+                    friendlyMessage = "Sua senha é muito fraca. Tente uma mais forte.";
                     break;
                 default:
                     console.error("Register Error:", error);
             }
-            displayMessage(friendlyMessage, "error");
-        } finally {
+            displayMessage(friendlyMessage, 'error');
+            // CORREÇÃO: O botão só é reativado em caso de erro.
             setButtonLoading(submitButton, false, originalButtonText);
         }
     });

@@ -1,15 +1,16 @@
 
-// --- CORE APPLICATION LOGIC (V3 - DECOUPLED) ---
+// --- CORE APPLICATION LOGIC (V3 - CLIENT-SIDE) ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    initializeUI();
+    // Initialize UI components
+    initializeUI(); 
     showLoader(true);
 
     let userId = null;
     let unsubscribeTransactions = null;
-    let recommendations = null; // Cache for recommendations
+    let recommendations = null; // Cache for recommendations JSON
 
-    // Fetch recommendations once on load
+    // Fetch static recommendations on initial load
     fetch('js/recommendations.json')
         .then(response => response.json())
         .then(data => {
@@ -22,22 +23,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             userId = user.uid;
             try {
-                // Check for user profile and onboarding completion
+                // 1. Check if user has completed the onboarding process
                 const userDoc = await getDocument('users', userId);
                 if (!userDoc.exists || !userDoc.data().onboardingCompleted) {
                     window.location.href = 'setup.html';
                     return;
                 }
 
+                // 2. Load the user's structural profile data
                 const profileDoc = await getDocument(`users/${userId}/structural_data`, 'user_profile');
-                showDashboard(profileDoc.data()); // Display user profile info
+                showDashboard(profileDoc.data()); // Update UI with user name, etc.
 
-                // Listen for real-time updates on transactions
+                // 3. Listen for real-time updates on transactions
                 const transactionsPath = `users/${userId}/transactions`;
                 unsubscribeTransactions = onSnapshot(transactionsPath, (transactions) => {
-                    renderTransactions(transactions);
-                    // Whenever transactions change, trigger a new diagnosis from the backend
-                    runBackendDiagnosis(transactions, profileDoc.data());
+                    renderTransactions(transactions); // Update the transactions table
+                    
+                    // 4. Whenever transactions change, trigger a new CLIENT-SIDE diagnosis
+                    // This replaces the old backend call.
+                    if (recommendations) { // Only run if recommendations are loaded
+                        runClientSideDiagnosis(transactions, profileDoc.data(), recommendations);
+                    }
                 });
 
             } catch (error) {
@@ -46,54 +52,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 showLoader(false);
             }
         } else {
-            // User is signed out
+            // User is signed out, clean up and redirect to login
             userId = null;
             if (unsubscribeTransactions) unsubscribeTransactions();
             window.location.href = 'login.html';
         }
     });
 
-    /**
-     * Triggers the backend diagnosis engine and renders the results.
-     * @param {Array<object>} transactions - The user's transactions.
-     * @param {object} profile - The user's profile data.
-     */
-    async function runBackendDiagnosis(transactions, profile) {
-        // Prepare the data payload for the API
-        const financialData = {
-            incomes: transactions.filter(t => t.type === 'revenue').map(t => ({ amount: t.amount })),
-            expenses: transactions.filter(t => t.type === 'expense').map(t => ({ amount: t.amount, priority: t.category === 'essential' ? 'essential' : 'non_essential' })),
-            liquid_assets: profile.liquid_assets || 0
-        };
-
-        try {
-            const response = await fetch('/api/engine/diagnose', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(financialData)
-            });
-
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.statusText}`);
-            }
-
-            const diagnosis = await response.json();
-            renderDiagnosisResults(diagnosis, recommendations);
-
-        } catch (error) {
-            console.error("Error running backend diagnosis:", error);
-            // Optionally, render an error state in the diagnosis panel
-        }
-    }
-
     // --- UI EVENT LISTENERS ---
     
-    // Transaction form submission
+    // Listener for the new transaction form
     if (window.transactionForm) {
         window.transactionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!userId) return;
-            // Logic to add document remains the same...
+            
             const description = document.getElementById('description').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const type = document.getElementById('type').value;
@@ -101,24 +74,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = document.getElementById('category').value;
             
             if (description && !isNaN(amount) && type && date && category) {
-                await addDocument(`users/${userId}/transactions`, { description, amount, type, date, category });
-                clearTransactionForm();
+                await addDocument(`users/${userId}/transactions`, { description, amount, type, date, category, createdAt: new Date() });
+                clearTransactionForm(); // Assumes this function exists in ui.js
             }
         });
     }
 
-    // Transaction deletion
+    // Listener for deleting transactions from the list
     if (window.transactionList) {
         window.transactionList.addEventListener('click', async (e) => {
             const deleteButton = e.target.closest('.delete-btn');
-            if (deleteButton && userId && confirm('Are you sure?')) {
+            if (deleteButton && userId && confirm('Tem certeza que deseja apagar este lançamento?')) {
                 const transactionId = deleteButton.closest('tr').dataset.id;
                 await deleteDocument(`users/${userId}/transactions/${transactionId}`);
             }
         });
     }
 
-    // Logout
+    // Listener for the logout button
     const logoutButton = document.getElementById('logout-btn');
     if (logoutButton) {
         logoutButton.addEventListener('click', () => logOut());

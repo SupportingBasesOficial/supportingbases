@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -48,21 +49,29 @@
             </section>
 
             <section id="lancamentos-section" class="content-body" style="display: none;">
-                 <!-- Conteúdo dos Lançamentos aqui -->
+                 <!-- O conteúdo dos Lançamentos, formulário, etc., iria aqui -->
             </section>
 
         </main>
     </div>
 
     <!-- Scripts -->
+    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
+    <!-- Firebase Configuration -->
     <script src="/js/firebase-config.js"></script>
-    <script src="/js/firebaseService.js"></script>
-    <script src="/js/diagnosis.js"></script>
+
+    <!-- UI and Firebase Services (Global Helpers) -->
     <script src="/js/ui.js"></script>
+    <script src="/js/firebaseService.js"></script>
+
+    <!-- Core Diagnosis Logic (Loaded as modules) -->
+    <script type="module" src="/js/diagnosis.js"></script>
+
+    <!-- Main Dashboard Orchestrator -->
     <script src="/js/dashboard.v2.js"></script>
 
 </body>

@@ -17,7 +17,7 @@
  * @param {object} metrics - The metrics object from the core-engine.
  * @returns {string} The name of the classified phase.
  */
-function classifyPhase(metrics) {
+export function classifyPhase(metrics) {
 
   // Handle edge cases and invalid data first.
   if (!metrics || !metrics.icf || !metrics.msd || 
@@ -63,5 +63,3 @@ function classifyPhase(metrics) {
   // Fallback case, should not be reached with the logic above.
   return "Erro de Dados"; 
 }
-
-module.exports = { classifyPhase };

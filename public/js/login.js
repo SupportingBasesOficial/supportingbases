@@ -1,47 +1,63 @@
-// Versão Clássica (sem módulos) do login.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    // A função onAuthStateChange agora está disponível globalmente
-    // Redireciona se o usuário já estiver logado
+    const loginForm = document.getElementById('login-form');
+    if (!loginForm) return;
+
+    // --- REDIRECT LOGIC ---
+    // This listener is always active. If a user is logged in, it redirects them.
+    // This handles both the initial page load and the successful login event.
     onAuthStateChange(user => {
         if (user) {
-            // Antes de redirecionar para o dashboard, verifica se o onboarding foi concluído
+            showAuthLoader(true); // Show a loader during the doc check
             getDocument('users', user.uid).then(userDoc => {
                 if (userDoc.exists && userDoc.data().onboardingCompleted) {
                     window.location.href = 'dashboard.html';
                 } else {
-                    // Se não completou o onboarding, força o usuário a ir para a página de setup
+                    // If the user doc doesn't exist or onboarding isn't done, go to setup.
                     window.location.href = 'setup.html';
                 }
+            }).catch(() => {
+                // If reading the doc fails, still go to setup as a fallback.
+                window.location.href = 'setup.html';
             });
         }
     });
 
-    const loginForm = document.getElementById('login-form');
-    if (!loginForm) return;
-
-    const displayMessage = (message, type) => {
+    // --- UI HELPER FUNCTIONS (Standardized) ---
+    const displayMessage = (message, type = 'error') => {
         const container = document.querySelector('.auth-card');
-        let messageBox = container.querySelector('.auth-message');
+        if (!container) return;
+
+        let messageBox = container.querySelector('.form-message');
         if (!messageBox) {
             messageBox = document.createElement('div');
-            messageBox.className = 'auth-message';
-            container.insertBefore(messageBox, loginForm);
+            messageBox.className = 'form-message';
+            container.insertBefore(messageBox, loginForm.querySelector('.form-actions'));
         }
+        
         messageBox.textContent = message;
-        messageBox.className = `auth-message ${type}`;
+        messageBox.className = `form-message ${type}`;
+        messageBox.style.display = 'block';
     };
 
     const setButtonLoading = (button, isLoading, originalText) => {
         if (isLoading) {
             button.disabled = true;
-            button.textContent = 'Entrando...';
+            button.innerHTML = '<span class="loader-sm"></span> Entrando...';
         } else {
             button.disabled = false;
-            button.textContent = originalText;
+            button.innerHTML = originalText;
         }
     };
 
+    const showAuthLoader = (isLoading) => {
+        const loader = document.querySelector('.auth-container .loader-fullpage'); // A specific loader for this page
+        if (loader) {
+            loader.style.display = isLoading ? 'flex' : 'none';
+        }
+    };
+
+    // --- FORM SUBMISSION LOGIC ---
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = loginForm.email.value;
@@ -49,18 +65,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const submitButton = loginForm.querySelector('button[type="submit"]');
         const originalButtonText = 'Login';
 
+        // Clear previous messages
+        displayMessage('', 'success');
         setButtonLoading(submitButton, true, originalButtonText);
 
         try {
-            // A função signIn agora está disponível globalmente
+            // 1. Attempt to sign in with Firebase Auth
             await signIn(email, password);
-            // O onAuthStateChange acima cuidará do redirecionamento para o local correto (dashboard ou setup).
+            // 2. If successful, the `onAuthStateChange` listener at the top will automatically handle the redirect.
+            // We don't need to do anything else here.
+
         } catch (error) {
             let friendlyMessage = "Ocorreu um erro ao tentar fazer login.";
             switch (error.code) {
                 case 'auth/user-not-found':
                 case 'auth/wrong-password':
-                case 'auth/invalid-credential':
+                case 'auth/invalid-credential': // Common error code for wrong email/pass
                     friendlyMessage = "E-mail ou senha incorretos.";
                     break;
                 case 'auth/invalid-email':
@@ -69,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 default:
                     console.error("Login Error:", error);
             }
-            displayMessage(friendlyMessage, "error");
-            setButtonLoading(submitButton, false, originalButtonText);
+            displayMessage(friendlyMessage, 'error');
+            setButtonLoading(submitButton, false, originalButtonText); // Only stop loading on error
         }
     });
 });
