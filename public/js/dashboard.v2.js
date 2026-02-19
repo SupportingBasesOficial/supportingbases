@@ -1,4 +1,6 @@
 
+import { runClientSideDiagnosis } from './diagnosis.js';
+
 // --- CORE APPLICATION LOGIC (V3 - CLIENT-SIDE) ---
 
 document.addEventListener('DOMContentLoaded', () => {

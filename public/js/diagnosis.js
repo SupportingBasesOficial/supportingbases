@@ -31,14 +31,23 @@ export function runClientSideDiagnosis(transactions, profile, recommendations) {
         const diagnosis = {
             phase,
             metrics,
+            recommendations, // Pass recommendations through
             reserveTarget: 6, // The conceptual reserve target
         };
         
-        // 5. Render the results using the existing UI function
-        renderDiagnosisResults(diagnosis, recommendations);
+        // 5. Render the results using the existing GLOBAL UI function
+        // FIX: Explicitly call the function from the window scope
+        if (window.renderDiagnosisResults) {
+            window.renderDiagnosisResults(diagnosis);
+        } else {
+            console.error("renderDiagnosisResults function not found on window object.");
+        }
 
     } catch (error) {
         console.error("Error running client-side diagnosis:", error);
         // Optionally, render an error state in the diagnosis panel
+        if(window.renderDiagnosisError) {
+            window.renderDiagnosisError(error);
+        }
     }
 }
