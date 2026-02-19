@@ -7,16 +7,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.auth-card');
         if (!container) return;
 
-        let messageBox = container.querySelector('.form-message');
+        let messageBox = registerForm.querySelector('.form-message'); // Look for the message box inside the form
         if (!messageBox) {
             messageBox = document.createElement('div');
             messageBox.className = 'form-message';
-            container.insertBefore(messageBox, registerForm.querySelector('.form-actions'));
+            // CORRIGIDO: Insere a caixa de mensagem DENTRO do formulário, antes dos botões de ação.
+            const formActions = registerForm.querySelector('.form-actions');
+            if (formActions) {
+                registerForm.insertBefore(messageBox, formActions);
+            } else {
+                registerForm.appendChild(messageBox); // Fallback se .form-actions não for encontrado
+            }
         }
         
         messageBox.textContent = message;
         messageBox.className = `form-message ${type}`;
-        messageBox.style.display = 'block';
+        messageBox.style.display = message ? 'block' : 'none';
     };
 
     const setButtonLoading = (button, isLoading, originalText) => {
@@ -38,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const submitButton = registerForm.querySelector('button[type="submit"]');
         const originalButtonText = 'Criar Conta';
 
-        displayMessage('', 'success'); // Limpa mensagens anteriores
+        displayMessage(''); // Limpa mensagens anteriores
 
         if (password !== passwordConfirm) {
             displayMessage("As senhas não coincidem.");
@@ -61,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 createdAt: new Date()
             });
             
-            // O redirecionamento acontecerá, então não precisamos reativar o botão aqui.
             window.location.href = 'type-selection.html';
 
         } catch (error) {
@@ -80,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error("Register Error:", error);
             }
             displayMessage(friendlyMessage, 'error');
-            // CORREÇÃO: O botão só é reativado em caso de erro.
             setButtonLoading(submitButton, false, originalButtonText);
         }
     });

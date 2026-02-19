@@ -1,7 +1,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('auth-loader');
-    const errorMessageContainer = document.getElementById('error-message');
+    const errorMessageContainer = document.getElementById('error-message'); // This is a general container, not form-specific
 
     const forms = {
         pessoa_fisica: document.getElementById('setup-form-pessoa_fisica'),
@@ -11,21 +11,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentForm = null;
 
-    // --- Main Auth Check ---
     onAuthStateChange(user => {
         if (user) {
             initializeForm(user);
         } else {
-            // If no user is logged in, they can't be on this page.
             window.location.href = 'login.html';
         }
     });
 
-    // --- UI HELPER FUNCTIONS (Standardized) ---
+    // Adjusted to work with a general error container and form-specific if needed
     const displayMessage = (message, type = 'error') => {
-        errorMessageContainer.textContent = message;
-        errorMessageContainer.className = `form-message ${type}`;
-        errorMessageContainer.style.display = message ? 'block' : 'none';
+        // Use the general error message container if the form one doesn't make sense here
+        if (errorMessageContainer) {
+            errorMessageContainer.textContent = message;
+            errorMessageContainer.className = `form-message ${type}`;
+            errorMessageContainer.style.display = message ? 'block' : 'none';
+        }
     };
 
     const setButtonLoading = (button, isLoading, originalText) => {
@@ -43,10 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loader) loader.style.display = isLoading ? 'block' : 'none';
     };
 
-    // --- FORM INITIALIZATION ---
     function initializeForm(user) {
         const urlParams = new URLSearchParams(window.location.search);
         const profileType = urlParams.get('type');
+
+        showLoader(true);
 
         if (profileType && forms[profileType]) {
             showLoader(false);
@@ -60,19 +62,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- FORM SUBMISSION LOGIC ---
     async function handleFormSubmit(event, profileType, user) {
         event.preventDefault();
+        if (!currentForm) return;
+
         const submitButton = currentForm.querySelector('button[type="submit"]');
         const originalButtonText = 'Salvar e Ir para o Dashboard';
 
         setButtonLoading(submitButton, true, originalButtonText);
-        displayMessage(''); // Clear previous errors
+        displayMessage('');
 
-        let profileData = { profileType }; // Include the profile type in the data
+        let profileData = { profileType };
 
         try {
-            // Collect data based on the active form
             if (profileType === 'pessoa_fisica') {
                 profileData.fullName = document.getElementById('pf-fullName').value;
                 profileData.birthDate = document.getElementById('pf-birthDate').value;
@@ -88,22 +90,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 profileData.market = document.getElementById('empresa-market').value;
                 profileData.liquid_assets = parseFloat(document.getElementById('empresa-liquid_assets').value);
             }
+            
+            // Basic validation to ensure fields are not empty
+            for (const key in profileData) {
+                if (!profileData[key] && key !== 'profileType') {
+                    throw new Error(`O campo ${key} é obrigatório.`);
+                }
+            }
 
-            // 1. Save the detailed profile data in a specific sub-collection
             await setDocument(`users/${user.uid}/profile`, 'user_data', profileData);
-
-            // 2. Mark onboarding as complete and save the profile type at the top level for easy access
             await updateDocument('users', user.uid, { 
                 onboardingCompleted: true,
                 profileType: profileType
             });
 
-            // 3. Redirect to the main dashboard
             window.location.href = 'dashboard.html';
 
         } catch (error) {
             console.error("Setup Error:", error);
-            displayMessage("Falha ao salvar. Verifique os campos e tente novamente.", "error");
+            displayMessage(error.message || "Falha ao salvar. Verifique os campos e tente novamente.", "error");
             setButtonLoading(submitButton, false, originalButtonText);
         }
     }
