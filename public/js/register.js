@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     friendlyMessage = "Sua senha é muito fraca. Tente uma mais forte.";
                     break;
                 default:
+                    friendlyMessage = `Ocorreu um erro inesperado. Por favor, tente novamente. (Código: ${error.code})`;
                     console.error("Register Error:", error);
             }
             displayMessage(friendlyMessage, 'error');
