@@ -16,7 +16,7 @@
   idx = {
     # Lista de extensões do VS Code para instalar.
     extensions = [
-      "vscode.git",
+      "vscode.git"
       "firebase.firebase-vscode"
     ];
 
