@@ -6,6 +6,7 @@
   # Lista de pacotes para instalar no ambiente de desenvolvimento.
   packages = [
     pkgs.nodejs_20  # Necessário para o Firebase e outras ferramentas JS
+    pkgs.pnpm       # Gerenciador de pacotes para monorepo
   ];
   
   # Variáveis de ambiente a serem definidas.
@@ -15,7 +16,7 @@
   idx = {
     # Lista de extensões do VS Code para instalar.
     extensions = [
-      "vscode.git"
+      "vscode.git",
       "firebase.firebase-vscode"
     ];
 
@@ -23,8 +24,8 @@
     workspace = {
       # Comandos a serem executados na criação do workspace.
       onCreate = {
-        # Instala as dependências do npm.
-        npm-install = "npm install";
+        # Instala as dependências do monorepo com pnpm.
+        pnpm-install = "pnpm install";
       };
       
       # Comandos a serem executados na inicialização do workspace.
@@ -35,12 +36,11 @@
     previews = {
       enable = true;
       previews = {
-        # Define um preview para a aplicação web.
+        # Define um preview para a aplicação web (Next.js).
         web = {
-          # Comando para iniciar um servidor web estático.
-          # O 'pkgs.nodePackages.http-server' nos dá um servidor simples.
-          # Ele servirá o conteúdo da pasta 'public' na porta definida pela variável $PORT.
-          command = ["${pkgs.nodePackages.http-server}/bin/http-server" "public" "-p" "$PORT" "-c-1"];
+          # Comando para iniciar o servidor de desenvolvimento do Next.js.
+          # O pnpm --filter web dev executa o script 'dev' do app 'web'.
+          command = ["pnpm", "--filter", "web", "run", "dev", "--", "--port", "$PORT"];
           manager = "web";
         };
       };
