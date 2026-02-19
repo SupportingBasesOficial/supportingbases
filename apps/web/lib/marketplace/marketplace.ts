@@ -2,7 +2,7 @@
 // MÓDULO 3 — MARKETPLACE ESTRUTURAL
 // Conecta a estabilidade financeira do usuário a produtos, serviços e oportunidades contextuais.
 
-import { IndicadoresSaude } from '../gestao-financeira/gestao';
+import { IndicadoresSaude } from '@supporting/core-engine';
 
 /**
  * Define as fases da jornada do usuário dentro do ecossistema.
