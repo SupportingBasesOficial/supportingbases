@@ -40,7 +40,7 @@
         web = {
           # Comando para iniciar o servidor de desenvolvimento do Next.js.
           # O pnpm --filter web dev executa o script 'dev' do app 'web'.
-          command = ["pnpm", "--filter", "web", "run", "dev", "--", "--port", "$PORT"];
+          command = ["pnpm", "--filter", "web", "run", "dev"];
           manager = "web";
         };
       };
