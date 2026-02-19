@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // 2. Load the user's structural profile data
-                const profileDoc = await getDocument(`users/${userId}/structural_data`, 'user_profile');
+                // 2. Load the user's structural profile data (CORRECTED PATH)
+                const profileDoc = await getDocument(`users/${userId}/profile`, 'user_data');
                 showDashboard(profileDoc.data()); // Update UI with user name, etc.
 
                 // 3. Listen for real-time updates on transactions
@@ -40,8 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderTransactions(transactions); // Update the transactions table
                     
                     // 4. Whenever transactions change, trigger a new CLIENT-SIDE diagnosis
-                    // This replaces the old backend call.
-                    if (recommendations) { // Only run if recommendations are loaded
+                    if (recommendations && profileDoc.exists) { // Ensure profile data exists
                         runClientSideDiagnosis(transactions, profileDoc.data(), recommendations);
                     }
                 });
