@@ -3,3 +3,5 @@ node_modules
 
 # Ignore service account key file
 serviceAccountKey.json
+.vercel
+.env*.local
