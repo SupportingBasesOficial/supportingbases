@@ -3,6 +3,8 @@
 export * from "./domain/entities/Despesa";
 export * from "./domain/entities/IndicadoresSaude";
 export * from "./domain/entities/DespesasAgrupadas";
+export * from "./domain/entities/ContaFinanceira";
+export * from "./domain/entities/SnapshotFinanceiro";
 export * from "./domain/services/ServicoDeDespesas";
 export * from "./domain/services/ServicoDeIndicadores";
 

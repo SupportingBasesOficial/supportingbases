@@ -1,24 +1,21 @@
 
-import { Despesa } from "../entities/Despesa";
+import { Despesa, TipoDespesa } from "../entities/Despesa";
 import { DespesasAgrupadas } from "../entities/DespesasAgrupadas";
 
 /**
- * Classifica e agrupa uma lista de despesas.
- * Na implementação real, isso usaria um modelo de ML ou regras heurísticas complexas.
- * @param despesas - A lista de despesas a serem classificadas.
- * @returns As despesas agrupadas por tipo.
+ * Agrupa uma lista de despesas pelo seu tipo.
+ * @param despesas - A lista de despesas a serem agrupadas.
+ * @returns Um objeto com as despesas agrupadas e somadas por tipo.
  */
 export function agruparDespesas(despesas: Despesa[]): DespesasAgrupadas {
-  const despesasAgrupadas: DespesasAgrupadas = {
-    ESTRUTURAL_FIXA: 0,
-    ESTRUTURAL_VARIAVEL: 0,
-    VARIAVEL_NAO_ESSENCIAL: 0,
-    EXPANSAO: 0,
-  };
+  const grupos: DespesasAgrupadas = {};
 
   for (const despesa of despesas) {
-    despesasAgrupadas[despesa.tipo] += despesa.valor;
+    if (!grupos[despesa.tipo]) {
+      grupos[despesa.tipo] = 0;
+    }
+    grupos[despesa.tipo] += despesa.valor;
   }
 
-  return despesasAgrupadas;
+  return grupos;
 }
