@@ -106,3 +106,5 @@ export function generateFluxoProjetado(receitaMensal: number, despesas: Despesa[
 
   return projecao;
 }
+
+export const workspaceTest = () => "workspace ok";
