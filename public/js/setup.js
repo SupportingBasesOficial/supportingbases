@@ -99,10 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             await setDocument(`users/${user.uid}/profile`, 'user_data', profileData);
-            await updateDocument('users', user.uid, { 
+            await setDocument('users', user.uid, { 
                 onboardingCompleted: true,
                 profileType: profileType
-            });
+            }, true);
 
             window.location.href = 'dashboard.html';
 
