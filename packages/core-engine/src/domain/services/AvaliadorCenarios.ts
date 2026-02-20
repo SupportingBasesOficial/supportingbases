@@ -6,10 +6,25 @@ import { ServicoDeIndicadores } from "./ServicoDeIndicadores";
 import { CrescimentoReceitaMensal } from "../strategies/CrescimentoReceitaMensal";
 import { InflacaoDespesasMensal } from "../strategies/InflacaoDespesasMensal";
 
-interface Cenario {
+// A interface Cenario antiga foi renomeada para CenarioDeProjecao para manter a lógica de simulação.
+interface CenarioDeProjecao {
     nome: string;
     descricao: string;
     estrategias: EstrategiaProjecao[];
+}
+
+/**
+ * Representa um cenário de recomendação concreto com seus riscos e benefícios.
+ * Este é o contrato oficial que deve ser usado em todo o sistema.
+ */
+export interface Cenario {
+  id: string;
+  estrategia: string;
+  descricao: string;
+  impactoEstimado: number;
+  scoreFinal: number;
+  prioridade: number;
+  risco: 'baixo' | 'medio' | 'alto';
 }
 
 interface ResultadoCenario {
@@ -24,7 +39,7 @@ interface ResultadoCenario {
 export class AvaliadorCenarios {
     private geradorFluxoCaixa = new GerarFluxoDeCaixaProjetado();
     private servicoIndicadores = new ServicoDeIndicadores();
-    private cenariosPredefinidos: Cenario[];
+    private cenariosPredefinidos: CenarioDeProjecao[];
 
     constructor() {
         this.cenariosPredefinidos = [
@@ -58,10 +73,6 @@ export class AvaliadorCenarios {
 
     /**
      * Compara um conjunto de cenários pré-definidos pelos seus nomes.
-     * @param conta A conta financeira inicial.
-     * @param nomesCenarios Nomes dos cenários a serem comparados (ex: ['Conservador', 'Agressivo']).
-     * @param meses O número de meses para a projeção.
-     * @returns Uma lista com os resultados de cada cenário, incluindo nome, descrição e score final.
      */
     compararCenarios(conta: ContaFinanceira, nomesCenarios: string[], meses: number = 12): ResultadoCenario[] {
         const cenariosParaComparar = this.cenariosPredefinidos.filter(c => nomesCenarios.includes(c.nome));
@@ -74,9 +85,9 @@ export class AvaliadorCenarios {
     }
 
     /**
-     * Compara um conjunto de cenários e retorna o de maior score de estabilidade.
+     * Compara um conjunto de cenários de projeção e retorna o de maior score de estabilidade.
      */
-    comparar(conta: ContaFinanceira, cenarios: Cenario[], meses: number): ResultadoCenario[] {
+    comparar(conta: ContaFinanceira, cenarios: CenarioDeProjecao[], meses: number): ResultadoCenario[] {
         const resultados = cenarios.map(cenario => {
             const fluxoDeCaixa = this.geradorFluxoCaixa.executar(conta, cenario.estrategias, meses);
             const ultimoSnapshot = fluxoDeCaixa[fluxoDeCaixa.length - 1];

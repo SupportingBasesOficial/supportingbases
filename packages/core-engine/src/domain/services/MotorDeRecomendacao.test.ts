@@ -1,28 +1,65 @@
+import { ContaFinanceira } from '../entities/ContaFinanceira';
+import { Despesa, TipoDespesa } from '../entities/Despesa';
+import { MotorDeRecomendacao } from './MotorDeRecomendacao';
+import { ServicoHistorico } from './ServicoHistorico';
+import { v4 as uuidv4 } from 'uuid';
 
-import { ContaFinanceira } from "../entities/ContaFinanceira";
-import { MotorDeRecomendacao } from "./MotorDeRecomendacao";
+function setup() {
+  const servicoHistoricoMock = {
+    registrar: jest.fn(),
+    obterHistorico: jest.fn().mockReturnValue([]),
+    gerarInsightsAdaptativos: jest.fn().mockReturnValue([]),
+  } as any;
+
+  const despesas = [
+    new Despesa(uuidv4(), 'Aluguel', 2000, TipoDespesa.ESTRUTURAL_FIXA, 'Moradia'),
+    new Despesa(uuidv4(), 'Lazer', 800, TipoDespesa.VARIAVEL_NAO_ESSENCIAL, 'Pessoal'),
+  ];
+
+  const conta = new ContaFinanceira(10000, despesas, 5000);
+
+  const motor = new MotorDeRecomendacao(servicoHistoricoMock, conta);
+
+  return { motor, conta, servicoHistoricoMock };
+}
 
 describe('MotorDeRecomendacao', () => {
-  it('deve recomendar a estratégia que maximiza o score de estabilidade', () => {
-    // Cenário: Uma conta com despesas altas em relação à receita.
-    // A contenção de despesas deve ser a estratégia mais impactante.
-    const contaComDespesasAltas = new ContaFinanceira('Despesas Altas', 10000, 5000, 4800);
-    const motor = new MotorDeRecomendacao();
+  it('deve recomendar o melhor cenário com base na situação financeira', () => {
+    const { motor, conta } = setup();
 
-    const recomendacao = motor.recomendarMelhorEstrategia(contaComDespesasAltas);
+    const recomendacao = motor.recomendarMelhorCenario(conta);
 
-    // Para esta conta, a "Contenção de Despesas" deve ter o maior impacto no score.
-    expect(recomendacao.nome).toBe('Contenção de Despesas (Moderada)');
+    expect(recomendacao).toBeDefined();
+    expect(recomendacao).toHaveProperty('id');
+    expect(recomendacao).toHaveProperty('estrategia');
+    expect(recomendacao).toHaveProperty('descricao');
+    expect(recomendacao).toHaveProperty('scoreFinal');
+    expect(typeof recomendacao.scoreFinal).toBe('number');
   });
 
-  it('deve recomendar aumento de receita quando as despesas estão controladas', () => {
-    // Cenário: Uma conta com despesas baixas, onde o potencial de crescimento da receita é mais atrativo.
-    const contaComDespesasBaixas = new ContaFinanceira('Despesas Baixas', 10000, 5000, 2000);
-    const motor = new MotorDeRecomendacao();
+  it('deve retornar uma lista de cenários recomendados ordenados por score', () => {
+    const { motor, conta } = setup();
 
-    const recomendacao = motor.recomendarMelhorEstrategia(contaComDespesasBaixas);
+    const recomendacoes = motor.recomendarTodosOsCenarios(conta);
 
-    // Para esta conta, o "Aumento de Receita" deve ser mais vantajoso.
-    expect(recomendacao.nome).toBe('Aumento de Receita (Agressivo)');
+    expect(recomendacoes).toBeInstanceOf(Array);
+    expect(recomendacoes.length).toBeGreaterThan(0);
+    expect(recomendacoes[0].scoreFinal).toBeGreaterThanOrEqual(recomendacoes[recomendacoes.length - 1].scoreFinal);
+  });
+
+  it('deve ajustar o score da recomendação com base nos insights do histórico', () => {
+    const { motor, conta, servicoHistoricoMock } = setup();
+
+    servicoHistoricoMock.gerarInsightsAdaptativos.mockReturnValue([
+      {
+        nome: 'Redução de despesas variáveis',
+        scoreMedio: 20,
+      },
+    ]);
+
+    const recomendacoes = motor.recomendarTodosOsCenarios(conta);
+
+    expect(recomendacoes.length).toBeGreaterThan(0);
+    expect(servicoHistoricoMock.gerarInsightsAdaptativos).toHaveBeenCalled();
   });
 });

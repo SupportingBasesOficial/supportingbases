@@ -1,4 +1,3 @@
-
 import { DespesasAgrupadas } from "./DespesasAgrupadas";
 import { IndicadoresSaude } from "./IndicadoresSaude";
 
@@ -33,11 +32,13 @@ export class SnapshotFinanceiro {
     const fluxoDeCaixa = this.receita - totalDespesas;
     const custoEstrutural = (this.despesas.ESTRUTURAL_FIXA || 0) + (this.despesas.ESTRUTURAL_VARIAVEL || 0);
     const nivelDeReserva = custoEstrutural > 0 ? this.reservas / custoEstrutural : Infinity;
+    const percentualComprometimentoRenda = this.receita > 0 ? (totalDespesas / this.receita) * 100 : 0;
+    const scoreEstabilidade = fluxoDeCaixa / this.receita * 100;
 
     return {
       fluxoDeCaixa,
-      dividaEstrutural: totalDespesas > 0 ? (custoEstrutural / totalDespesas) * 100 : 0,
-      saudeFinanceira: fluxoDeCaixa / this.receita * 100,
+      scoreEstabilidade,
+      percentualComprometimentoRenda,
       nivelDeReserva,
     };
   }

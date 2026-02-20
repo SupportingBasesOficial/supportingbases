@@ -1,26 +1,16 @@
+import { ContaFinanceira } from '@core-engine/domain/entities/ContaFinanceira';
+import { Despesa, TipoDespesa } from '@core-engine/domain/entities/Despesa';
+import { toContaFinanceira, ContaWebDTO } from './adapters';
 
-import { ContaFinanceira } from '../../../packages/core-engine/src/domain/entities/ContaFinanceira';
-
-/**
- * Simula a obtenção da conta financeira do usuário logado a partir de uma API.
- * Em um aplicativo real, isso faria uma chamada de rede para um backend.
- * 
- * @returns Uma promessa que resolve para uma instância de ContaFinanceira.
- */
-export async function getContaUsuarioLogado(): Promise<ContaFinanceira> {
-    console.log("Buscando dados financeiros do usuário...");
-
-    // Simula um atraso de rede
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Retorna uma conta mockada consistente para o usuário
-    const contaDoUsuario = new ContaFinanceira(
-        'Usuário Padrão', // nome
-        5000,             // saldo inicial
-        4500,             // receita mensal
-        3800              // despesa mensal
-    );
-
-    console.log("Dados encontrados:", contaDoUsuario);
-    return contaDoUsuario;
+export function getContaUsuarioLogado(): ContaFinanceira {
+  const mockData: ContaWebDTO = {
+    receitaMensal: 5000,
+    despesas: [
+      new Despesa('d1', 'Aluguel', 1500, TipoDespesa.ESTRUTURAL_FIXA, 'Moradia'),
+      new Despesa('d2', 'Supermercado', 800, TipoDespesa.ESTRUTURAL_VARIAVEL, 'Alimentação'),
+      new Despesa('d3', 'Lazer', 400, TipoDespesa.VARIAVEL_NAO_ESSENCIAL, 'Pessoal'),
+    ],
+    totalReservas: 10000,
+  };
+  return toContaFinanceira(mockData);
 }

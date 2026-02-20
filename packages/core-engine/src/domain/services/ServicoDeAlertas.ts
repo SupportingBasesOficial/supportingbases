@@ -1,39 +1,36 @@
-
 import { ContaFinanceira } from '../entities/ContaFinanceira';
 import { AlertaFinanceiro, criarAlerta } from '../entities/AlertaFinanceiro';
 import { MotorDeRecomendacao } from './MotorDeRecomendacao';
+import { ServicoHistorico } from './ServicoHistorico';
 
 /**
  * Serviço responsável por gerar alertas financeiros proativos.
  */
 export class ServicoDeAlertas {
     private motor: MotorDeRecomendacao;
+    private servicoHistorico: ServicoHistorico;
 
-    constructor(motor: MotorDeRecomendacao) {
+    constructor(motor: MotorDeRecomendacao, servicoHistorico: ServicoHistorico) {
         this.motor = motor;
+        this.servicoHistorico = servicoHistorico;
     }
 
-    /**
-     * Gera alertas de risco, oportunidade e informativos com base na conta do usuário.
-     * @param conta A conta financeira do usuário.
-     * @returns Uma lista de alertas financeiros, ordenada por impacto.
-     */
     gerarAlertas(conta: ContaFinanceira): AlertaFinanceiro[] {
         const alertas: AlertaFinanceiro[] = [];
 
-        // 1. Gerar alertas de risco e oportunidade baseado no score das estratégias
-        const recomendacoes = this.motor.recomendarTodasEstrategias(conta);
+        // 1. O método foi corrigido para 'recomendarTodosOsCenarios' e as propriedades do cenário foram atualizadas.
+        const recomendacoes = this.motor.recomendarTodosOsCenarios(conta);
         recomendacoes.forEach(rec => {
             if (rec.scoreFinal < 50) { // Limiar de risco
                 alertas.push(criarAlerta({
-                    titulo: `Risco Detectado: Estratégia "${rec.nome}"`, 
+                    titulo: `Risco Detectado: Estratégia "${rec.estrategia}"`,
                     descricao: `O score final projetado para esta estratégia é ${rec.scoreFinal.toFixed(2)}, indicando um potencial risco à sua estabilidade financeira.`,
                     tipo: 'risco',
-                    impactoEstimado: rec.scoreFinal,
+                    impactoEstimado: 100 - rec.scoreFinal,
                 }));
             } else if (rec.scoreFinal >= 85) { // Limiar de oportunidade
                 alertas.push(criarAlerta({
-                    titulo: `Oportunidade Encontrada: ${rec.nome}`,
+                    titulo: `Oportunidade Encontrada: ${rec.estrategia}`,
                     descricao: `Esta estratégia possui um score alto de ${rec.scoreFinal.toFixed(2)}. Considere aplicá-la para otimizar sua saúde financeira.`,
                     tipo: 'oportunidade',
                     impactoEstimado: rec.scoreFinal,
@@ -41,24 +38,25 @@ export class ServicoDeAlertas {
             }
         });
 
-        // 2. Alertas informativos (ex: saldo baixo)
-        if (conta.saldo < 1000) { // Limiar de saldo baixo
+        // 2. A propriedade 'saldo' foi corrigida para 'totalReservas' para se alinhar à entidade ContaFinanceira.
+        if (conta.totalReservas < 1000) { // Limiar de saldo baixo
             alertas.push(criarAlerta({
                 titulo: 'Informativo: Saldo Baixo',
-                descricao: `Seu saldo atual é de R$${conta.saldo.toFixed(2)}, o que pode requerer atenção para evitar dificuldades de liquidez.`,
+                descricao: `Seu saldo atual é de R$${conta.totalReservas.toFixed(2)}, o que pode requerer atenção para evitar dificuldades de liquidez.`,
                 tipo: 'informativo',
-                impactoEstimado: 50, // Impacto moderado
+                impactoEstimado: 30, // Prioridade mais baixa
             }));
         }
 
-        // 3. Ordenar alertas por tipo (risco > oportunidade > informativo) e depois por impacto
-        alertas.sort((a, b) => {
-            const tipoOrder = { 'risco': 1, 'oportunidade': 2, 'informativo': 3 };
-            if (a.tipo !== b.tipo) {
-                return tipoOrder[a.tipo] - tipoOrder[b.tipo];
+        const insights = this.servicoHistorico.gerarInsightsAdaptativos();
+        alertas.forEach(alerta => {
+            const insight = insights.find(i => alerta.titulo.includes(i.nome));
+            if (insight && insight.scoreMedio) {
+                alerta.impactoEstimado *= 1 + insight.scoreMedio / 100;
             }
-            return b.impactoEstimado - a.impactoEstimado;
         });
+
+        alertas.sort((a, b) => b.impactoEstimado - a.impactoEstimado);
 
         return alertas;
     }

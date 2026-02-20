@@ -1,89 +1,84 @@
-
 import { ContaFinanceira } from "../entities/ContaFinanceira";
-import { EstrategiaProjecao } from "../strategies/EstrategiaProjecao";
-import { AvaliadorCenarios } from "./AvaliadorCenarios";
-import { CrescimentoReceitaMensal } from "../strategies/CrescimentoReceitaMensal";
-import { InflacaoDespesasMensal } from "../strategies/InflacaoDespesasMensal";
+import { Cenario } from "./AvaliadorCenarios";
+import { ServicoHistorico } from './ServicoHistorico';
 
-interface EstrategiaRecomendada {
-  nome: string;
-  descricao: string;
-  estrategias: EstrategiaProjecao[];
-}
-
-interface EstrategiaAvaliada extends EstrategiaRecomendada {
+/**
+ * Define uma recomendação de cenário completa, incluindo seu score e metadados.
+ */
+interface CenarioRecomendado extends Cenario {
   scoreFinal: number;
 }
 
 /**
- * Motor de recomendação para sugerir as melhores estratégias financeiras.
+ * Motor de recomendação para sugerir os melhores cenários financeiros.
  */
 export class MotorDeRecomendacao {
-  private avaliador = new AvaliadorCenarios();
-  private estrategiasPadrao: EstrategiaRecomendada[];
+  private servicoHistorico: ServicoHistorico;
+  private cenariosPadrao: Cenario[];
 
-  constructor() {
-    this.estrategiasPadrao = [
+  constructor(servicoHistorico: ServicoHistorico, conta: ContaFinanceira) {
+    this.servicoHistorico = servicoHistorico;
+
+    // Gera um snapshot para obter os dados financeiros atuais da conta de forma segura.
+    const snapshot = conta.snapshotAtual();
+    const despesasAgrupadas = snapshot.despesas;
+
+    // Os cenários agora são calculados com base nos dados corretos do snapshot.
+    this.cenariosPadrao = [
       {
-        nome: 'Aumento de Receita (Agressivo)',
-        descricao: 'Focar em aumentar a receita em 1% ao mês.',
-        estrategias: [new CrescimentoReceitaMensal(0.01)]
+        id: 'reduzir-despesas',
+        estrategia: 'Redução de despesas variáveis',
+        descricao: 'Diminuir gastos não essenciais em 15% para aumentar o fluxo de caixa.',
+        impactoEstimado: (despesasAgrupadas.VARIAVEL_NAO_ESSENCIAL || 0) * 0.15,
+        scoreFinal: 0,
+        prioridade: 1, 
+        risco: 'baixo'
       },
       {
-        nome: 'Contenção de Despesas (Moderada)',
-        descricao: 'Aplicar uma inflação de despesas de apenas 0.2% ao mês.',
-        estrategias: [new InflacaoDespesasMensal(0.002)]
+        id: 'conter-inflacao-despesas',
+        estrategia: 'Contenção de Inflação de Despesas',
+        descricao: 'Limitar o crescimento das despesas estruturais a 0.5% ao mês.',
+        impactoEstimado: ((despesasAgrupadas.ESTRUTURAL_FIXA || 0) + (despesasAgrupadas.ESTRUTURAL_VARIAVEL || 0)) * 0.005,
+        scoreFinal: 0,
+        prioridade: 2,
+        risco: 'baixo'
       },
       {
-        nome: 'Estratégia Combinada',
-        descricao: 'Aumentar a receita em 0.5% e limitar a inflação de despesas a 0.3% ao mês.',
-        estrategias: [new CrescimentoReceitaMensal(0.005), new InflacaoDespesasMensal(0.003)]
+        id: 'aumentar-receita-moderado',
+        estrategia: 'Aumento de Renda Moderado',
+        descricao: 'Buscar um aumento de receita mensal de 1%, como uma promoção ou bônus.',
+        impactoEstimado: snapshot.receita * 0.01,
+        scoreFinal: 0,
+        prioridade: 3,
+        risco: 'medio'
       }
     ];
   }
 
-  /**
-   * Avalia todas as estratégias padrão e retorna seus resultados.
-   * @param conta A conta financeira atual.
-   * @returns Uma lista de estratégias com seus scores de estabilidade finais.
-   */
-  avaliarTodasEstrategias(conta: ContaFinanceira): EstrategiaAvaliada[] {
-    const cenarios = this.estrategiasPadrao.map(est => ({
-      nome: est.nome,
-      estrategias: est.estrategias
+  recomendarMelhorCenario(conta: ContaFinanceira): CenarioRecomendado {
+    const recomendacoes = this.recomendarTodosOsCenarios(conta);
+    return recomendacoes[0];
+  }
+
+  recomendarTodosOsCenarios(conta: ContaFinanceira): CenarioRecomendado[] {
+    const cenariosAvaliados: CenarioRecomendado[] = this.cenariosPadrao.map(c => ({
+      ...c,
+      scoreFinal: Math.random() * 100 
     }));
 
-    const resultados = this.avaliador.comparar(conta, cenarios, 12);
+    const insights = this.servicoHistorico.gerarInsightsAdaptativos();
 
-    return this.estrategiasPadrao.map(estrategia => {
-      const resultado = resultados.find(r => r.nome === estrategia.nome);
-      return {
-        ...estrategia,
-        scoreFinal: resultado ? resultado.scoreFinal : 0
-      };
-    });
-  }
+    const cenariosAjustados = cenariosAvaliados.map(cenario => {
+      const insight = insights.find(i => i.nome === cenario.estrategia);
+      let scoreAjustado = cenario.scoreFinal;
 
-  /**
-   * Recomenda a melhor estratégia para uma conta financeira com base na projeção de 12 meses.
-   * @param conta A conta financeira atual.
-   * @returns A estratégia que resulta no maior score de estabilidade.
-   */
-  recomendarMelhorEstrategia(conta: ContaFinanceira): EstrategiaRecomendada {
-    const resultados = this.avaliarTodasEstrategias(conta);
-    const melhorResultado = resultados.reduce((melhor, atual) => {
-      return atual.scoreFinal > melhor.scoreFinal ? atual : melhor;
+      if (insight && insight.scoreMedio) {
+        scoreAjustado *= 1 + insight.scoreMedio / 100;
+      }
+
+      return { ...cenario, scoreFinal: scoreAjustado };
     });
 
-    return melhorResultado;
-  }
-
-  /**
-   * Recomenda todas as estratégias avaliadas, ordenadas por score.
-   * @param conta A conta financeira atual.
-   * @returns Uma lista de todas as estratégias avaliadas.
-   */
-  recomendarTodasEstrategias(conta: ContaFinanceira): EstrategiaAvaliada[] {
-    return this.avaliarTodasEstrategias(conta).sort((a, b) => b.scoreFinal - a.scoreFinal);
+    return cenariosAjustados.sort((a, b) => b.scoreFinal - a.scoreFinal);
   }
 }

@@ -1,45 +1,54 @@
-
-import { ContaFinanceira } from "../entities/ContaFinanceira";
-import { EstrategiaProjecao } from "../strategies/EstrategiaProjecao";
-import { AvaliadorCenarios } from "./AvaliadorCenarios";
-import { CrescimentoReceitaMensal } from "../strategies/CrescimentoReceitaMensal";
-import { InflacaoDespesasMensal } from "../strategies/InflacaoDespesasMensal";
+import { ContaFinanceira } from '../entities/ContaFinanceira';
+import { Despesa, TipoDespesa } from '../entities/Despesa';
+import { AvaliadorCenarios } from './AvaliadorCenarios';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('AvaliadorCenarios', () => {
-  it('deve comparar dois cenários e retornar o de maior score de estabilidade', () => {
-    const contaInicial = new ContaFinanceira('Teste', 10000, 5000, 4000);
-    const avaliador = new AvaliadorCenarios();
+  const avaliador = new AvaliadorCenarios();
 
-    const cenarioConservador: { nome: string; estrategias: EstrategiaProjecao[] } = {
+  const despesasIniciais = [
+    new Despesa(uuidv4(), 'Aluguel', 3000, TipoDespesa.ESTRUTURAL_FIXA, 'Moradia'),
+    new Despesa(uuidv4(), 'Alimentação', 1000, TipoDespesa.ESTRUTURAL_VARIAVEL, 'Alimentação'),
+  ];
+  const contaInicial = new ContaFinanceira(10000, despesasIniciais, 20000);
+
+  it('deve comparar cenários e retornar resultados ordenados por score', () => {
+    // Mock dos cenários sem depender de tipos internos
+    const cenarioConservador = {
       nome: 'Conservador',
+      descricao: 'Mantém os gastos atuais com leve aumento pela inflação.',
       estrategias: [
-        new CrescimentoReceitaMensal(0.005), // 0.5% de crescimento da receita
-        new InflacaoDespesasMensal(0.003) // 0.3% de inflação das despesas
+        { aplicar: (s, m) => s.cloneComNovasReservas(s.reservas + s.calcularIndicadores().fluxoDeCaixa) }
       ]
     };
 
-    const cenarioAgressivo: { nome: string; estrategias: EstrategiaProjecao[] } = {
+    const cenarioAgressivo = {
       nome: 'Agressivo',
+      descricao: 'Aumenta a receita e controla despesas.',
       estrategias: [
-        new CrescimentoReceitaMensal(0.01), // 1% de crescimento da receita
-        new InflacaoDespesasMensal(0.005) // 0.5% de inflação das despesas
+        { aplicar: (s, m) => s.cloneComNovaReceita(s.receita * 1.01) },
+        { aplicar: (s, m) => s.cloneComNovasReservas(s.reservas + s.calcularIndicadores().fluxoDeCaixa) }
       ]
     };
 
+    // O método 'comparar' retorna ResultadoCenario[], que não possui a propriedade 'projecoes'
     const resultados = avaliador.comparar(contaInicial, [cenarioConservador, cenarioAgressivo], 12);
 
-    expect(resultados).toHaveLength(2);
+    expect(resultados.length).toBe(2);
+    // Validar a API pública de ResultadoCenario
+    expect(resultados[0]).toHaveProperty('nome');
+    expect(resultados[0]).toHaveProperty('descricao');
+    expect(resultados[0]).toHaveProperty('scoreFinal');
+    // O cenário agressivo deve ter um score maior
+    expect(resultados[1].scoreFinal).toBeGreaterThan(resultados[0].scoreFinal);
+  });
 
-    const resultadoConservador = resultados.find(r => r.nome === 'Conservador');
-    const resultadoAgressivo = resultados.find(r => r.nome === 'Agressivo');
-
-    expect(resultadoConservador).toBeDefined();
-    expect(resultadoAgressivo).toBeDefined();
-
-    // Espera-se que o cenário com maior crescimento de receita e menor inflação (proporcionalmente) 
-    // tenha um impacto positivo maior na estabilidade, assumindo que a receita cresce mais que a despesa.
-    expect(resultadoAgressivo!.scoreFinal).toBeGreaterThan(resultadoConservador!.scoreFinal);
-
-    console.log('Resultados da Comparação de Cenários:', JSON.stringify(resultados, null, 2));
+  it('deve lançar um erro se a quantidade de meses for inválida', () => {
+    const cenario = {
+      nome: 'Teste',
+      descricao: 'Cenário de teste de erro.',
+      estrategias: []
+    };
+    expect(() => avaliador.comparar(contaInicial, [cenario], 0)).toThrow('A quantidade de meses deve ser maior que zero.');
   });
 });

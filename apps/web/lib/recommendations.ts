@@ -1,32 +1,25 @@
+import { ContaFinanceira } from "@core-engine/domain/entities/ContaFinanceira";
+import { MotorDeRecomendacao } from "@core-engine/domain/services/MotorDeRecomendacao";
+import { servicoHistorico } from "./core";
 
-import { ContaFinanceira } from "../../../packages/core-engine/src/domain/entities/ContaFinanceira";
-import { MotorDeRecomendacao } from "../../../packages/core-engine/src/domain/services/MotorDeRecomendacao";
-
-// Formato esperado pelo front-end
+// A interface foi revertida para o DTO de apresentação, sem lógicas de domínio.
 interface RecomendacaoFormatada {
   titulo: string;
   descricao: string;
-  impactoEstimado: number; // Alterado para número para permitir ordenação
+  impacto: string;
 }
 
-/**
- * Consome o MotorDeRecomendacao e entrega as recomendações no formato 
- * esperado pelo front-end.
- * 
- * @param conta A conta financeira do usuário.
- * @returns Uma lista de recomendações formatadas para a UI.
- */
-export function getRecomendacoesUsuario(conta: ContaFinanceira): RecomendacaoFormatada[] {
-  const motor = new MotorDeRecomendacao();
-  // O método do motor agora deve retornar todas as estratégias avaliadas com seus scores
-  const estrategiasAvaliadas = motor.avaliarTodasEstrategias(conta);
+export async function getRecomendacoesUsuario(conta: ContaFinanceira): Promise<RecomendacaoFormatada[]> {
+  const motor = new MotorDeRecomendacao(servicoHistorico, conta);
+  const cenariosRecomendados = motor.recomendarTodosOsCenarios(conta);
 
-  // Mapeia o resultado do motor para o formato que a UI espera.
-  const recomendacoesFormatadas = estrategiasAvaliadas.map(estrategia => ({
-    titulo: estrategia.nome,
-    descricao: estrategia.descricao,
-    impactoEstimado: estrategia.scoreFinal // Usando o score final como o impacto
+  // O mapeamento foi simplificado para o DTO, formatando o impacto como string e removendo o score.
+  const recomendacoes = cenariosRecomendados.map(cenario => ({
+    titulo: cenario.estrategia,
+    descricao: cenario.descricao,
+    impacto: `R$ ${cenario.impactoEstimado.toFixed(2)} / mês`
   }));
 
-  return recomendacoesFormatadas;
+  // A ordenação é responsabilidade do Core, a Web apenas apresenta os dados.
+  return recomendacoes;
 }

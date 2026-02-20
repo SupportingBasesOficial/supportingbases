@@ -1,5 +1,4 @@
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { agruparDespesas } from './domain/services/ServicoDeDespesas';
 import { TipoDespesa, Despesa } from './domain/entities/Despesa';
 import { ContaFinanceira } from './domain/entities/ContaFinanceira';
@@ -22,7 +21,12 @@ describe('Core Engine - Estratégias de Projeção', () => {
   let snapshotInicial: SnapshotFinanceiro;
 
   beforeEach(() => {
-    snapshotInicial = new SnapshotFinanceiro(5000, { ESTRUTURAL_FIXA: 2000, VARIAVEL_NAO_ESSENCIAL: 1000 }, 10000);
+    snapshotInicial = new SnapshotFinanceiro(5000, { 
+      ESTRUTURAL_FIXA: 2000, 
+      ESTRUTURAL_VARIAVEL: 0,
+      VARIAVEL_NAO_ESSENCIAL: 1000, 
+      EXPANSAO: 0 
+    }, 10000);
   });
 
   it('CrescimentoReceitaMensal deve aumentar a receita corretamente', () => {
