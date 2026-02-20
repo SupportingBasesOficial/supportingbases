@@ -13,9 +13,9 @@ export async function getRecomendacoesUsuario(conta: ContaFinanceira): Promise<R
   const motor = new MotorDeRecomendacao(servicoHistorico, conta);
   const cenariosRecomendados = motor.recomendarTodosOsCenarios(conta);
 
-  // O mapeamento foi simplificado para o DTO, formatando o impacto como string e removendo o score.
+  // O mapeamento foi corrigido para usar 'tipo' em vez de 'estrategia'.
   const recomendacoes = cenariosRecomendados.map(cenario => ({
-    titulo: cenario.estrategia,
+    titulo: cenario.tipo,
     descricao: cenario.descricao,
     impacto: `R$ ${cenario.impactoEstimado.toFixed(2)} / mês`
   }));

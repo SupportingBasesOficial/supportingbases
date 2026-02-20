@@ -29,7 +29,7 @@ describe('ServicoDeAlertas', () => {
   it('deve gerar um alerta de RISCO para recomendação com score baixo', () => {
     const recomendacaoRisco = {
       id: 'reduzir-despesas',
-      estrategia: 'Redução de Despesas',
+      tipo: 'Redução de Despesas', // Corrigido de 'estrategia'
       descricao: 'Cortar gastos para evitar dívidas',
       scoreFinal: 40,
       impactoEstimado: 300,
@@ -42,13 +42,13 @@ describe('ServicoDeAlertas', () => {
 
     expect(alertas).toHaveLength(1);
     expect(alertas[0].tipo).toBe('risco');
-    expect(alertas[0].titulo).toContain('Risco Detectado');
+    expect(alertas[0].titulo).toContain('Risco Detectado: Redução de Despesas');
   });
 
   it('deve gerar um alerta de OPORTUNIDADE para recomendação com score alto', () => {
     const recomendacaoOportunidade = {
       id: 'investir-mais',
-      estrategia: 'Aumentar Investimentos',
+      tipo: 'Aumentar Investimentos', // Corrigido de 'estrategia'
       descricao: 'Aproveitar sobra de caixa para investir',
       scoreFinal: 90, 
       impactoEstimado: 1500,
@@ -61,18 +61,18 @@ describe('ServicoDeAlertas', () => {
 
     expect(alertas).toHaveLength(1);
     expect(alertas[0].tipo).toBe('oportunidade');
-    expect(alertas[0].titulo).toContain('Oportunidade Encontrada');
+    expect(alertas[0].titulo).toContain('Oportunidade Encontrada: Aumentar Investimentos');
   });
 
   it('NÃO deve gerar alertas para recomendação com score intermediário', () => {
     const recomendacaoInformativa = {
       id: 'manter-orcamento',
-      estrategia: 'Manter Orçamento Atual',
+      tipo: 'Manter Orçamento Atual', // Corrigido de 'estrategia'
       descricao: 'Situação financeira estável',
       scoreFinal: 70, 
       impactoEstimado: 0,
       prioridade: 3,
-      risco: 'baixo' as const // Usando um valor válido, mesmo que o alerta não seja gerado
+      risco: 'baixo' as const
     };
     motorDeRecomendacaoMock.recomendarTodosOsCenarios.mockReturnValue([recomendacaoInformativa]);
 
@@ -92,8 +92,8 @@ describe('ServicoDeAlertas', () => {
   });
 
   it('deve ordenar os alertas por impacto estimado', () => {
-    const rec1 = { id: 'rec1', estrategia: 'Risco Alto', scoreFinal: 30, impactoEstimado: 70, descricao:'', prioridade:1, risco: 'alto' as const }; 
-    const rec2 = { id: 'rec2', estrategia: 'Oportunidade Baixa', scoreFinal: 85, impactoEstimado: 85, descricao:'', prioridade:1, risco: 'baixo' as const };
+    const rec1 = { id: 'rec1', tipo: 'Risco Alto', scoreFinal: 30, impactoEstimado: 70, descricao:'', prioridade:1, risco: 'alto' as const }; 
+    const rec2 = { id: 'rec2', tipo: 'Oportunidade Baixa', scoreFinal: 85, impactoEstimado: 85, descricao:'', prioridade:1, risco: 'baixo' as const };
     motorDeRecomendacaoMock.recomendarTodosOsCenarios.mockReturnValue([rec1, rec2]);
 
     const alertas = servico.gerarAlertas(contaMock);

@@ -1,3 +1,4 @@
+
 import { ContaFinanceira } from '../entities/ContaFinanceira';
 import { AlertaFinanceiro, criarAlerta } from '../entities/AlertaFinanceiro';
 import { MotorDeRecomendacao } from './MotorDeRecomendacao';
@@ -18,27 +19,27 @@ export class ServicoDeAlertas {
     gerarAlertas(conta: ContaFinanceira): AlertaFinanceiro[] {
         const alertas: AlertaFinanceiro[] = [];
 
-        // 1. O método foi corrigido para 'recomendarTodosOsCenarios' e as propriedades do cenário foram atualizadas.
         const recomendacoes = this.motor.recomendarTodosOsCenarios(conta);
         recomendacoes.forEach(rec => {
             if (rec.scoreFinal < 50) { // Limiar de risco
                 alertas.push(criarAlerta({
-                    titulo: `Risco Detectado: Estratégia "${rec.estrategia}"`,
-                    descricao: `O score final projetado para esta estratégia é ${rec.scoreFinal.toFixed(2)}, indicando um potencial risco à sua estabilidade financeira.`,
+                    // Corrigido para usar a propriedade 'tipo' em vez de 'estrategia'.
+                    titulo: `Risco Detectado: ${rec.tipo}`,
+                    descricao: `O score final projetado para este cenário é ${rec.scoreFinal.toFixed(2)}, indicando um potencial risco à sua estabilidade financeira.`,
                     tipo: 'risco',
                     impactoEstimado: 100 - rec.scoreFinal,
                 }));
             } else if (rec.scoreFinal >= 85) { // Limiar de oportunidade
                 alertas.push(criarAlerta({
-                    titulo: `Oportunidade Encontrada: ${rec.estrategia}`,
-                    descricao: `Esta estratégia possui um score alto de ${rec.scoreFinal.toFixed(2)}. Considere aplicá-la para otimizar sua saúde financeira.`,
+                    // Corrigido para usar a propriedade 'tipo' em vez de 'estrategia'.
+                    titulo: `Oportunidade Encontrada: ${rec.tipo}`,
+                    descricao: `Este cenário possui um score alto de ${rec.scoreFinal.toFixed(2)}. Considere aplicá-lo para otimizar sua saúde financeira.`,
                     tipo: 'oportunidade',
                     impactoEstimado: rec.scoreFinal,
                 }));
             }
         });
 
-        // 2. A propriedade 'saldo' foi corrigida para 'totalReservas' para se alinhar à entidade ContaFinanceira.
         if (conta.totalReservas < 1000) { // Limiar de saldo baixo
             alertas.push(criarAlerta({
                 titulo: 'Informativo: Saldo Baixo',

@@ -2,16 +2,18 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { ContaFinanceira, Despesa, Receita } from '../../../packages/core-engine/src/domain/entities/ContaFinanceira';
+import { ContaFinanceira } from '../../../packages/core-engine/src/domain/entities/ContaFinanceira';
 import { AvaliadorCenarios } from '../../../packages/core-engine/src/domain/services/AvaliadorCenarios';
 
 interface SimulatorProps {
     conta: ContaFinanceira | null;
 }
 
+// Interface ajustada para o novo retorno do avaliador
 interface Simulacao {
     nome: string;
-    scoreFinal: number;
+    variacao: number;
+    saldoProjetado: number;
     descricao?: string;
 }
 
@@ -23,7 +25,6 @@ export const Simulator: React.FC<SimulatorProps> = ({ conta }) => {
     const [receitaExtra, setReceitaExtra] = useState<number>(0);
     const [despesaExtra, setDespesaExtra] = useState<number>(0);
 
-    // Usamos useMemo para garantir que o avaliador não seja recriado a cada renderização
     const avaliador = useMemo(() => new AvaliadorCenarios(), []);
 
     const rodarSimulacao = async () => {
@@ -34,27 +35,54 @@ export const Simulator: React.FC<SimulatorProps> = ({ conta }) => {
 
         setLoading(true);
         setError(null);
+
         try {
-            // Cria uma nova instância de ContaFinanceira para a simulação
-            const contaSimulada = new ContaFinanceira(
-                `${conta.nome} (Simulação)`,
+            // 1. CONTA BASE PARA COMPARAÇÃO
+            // A conta base é a conta original ANTES das simulações.
+            const contaBase = new ContaFinanceira(
+                conta.nome,
+                conta.saldo,
+                conta.receitaMensal,
+                conta.despesaMensal
+            );
+
+            // 2. DEFINIÇÃO DOS CENÁRIOS
+            // Criamos explicitamente os cenários com base nas entradas do usuário.
+            const cenarioPadrao = new ContaFinanceira(
+                'Cenário Padrão',
                 conta.saldo,
                 conta.receitaMensal + receitaExtra,
                 conta.despesaMensal + despesaExtra
             );
-            
-            // Define os cenários que queremos comparar
-            const cenariosParaSimular = ['Padrão', 'Conservador', 'Agressivo', 'Contenção de Despesas'];
 
-            // O método é síncrono, mas envolvemos em um Promise para simular um fluxo assíncrono
-            const resultados = await Promise.resolve(
-                avaliador.compararCenarios(contaSimulada, cenariosParaSimular, 24)
+            const cenarioContencao = new ContaFinanceira(
+                'Contenção de Despesas (-10%)',
+                conta.saldo,
+                conta.receitaMensal + receitaExtra,
+                (conta.despesaMensal + despesaExtra) * 0.9
             );
 
-            // Ordenar por scoreFinal decrescente
-            resultados.sort((a, b) => b.scoreFinal - a.scoreFinal);
+            const cenarioCrescimento = new ContaFinanceira(
+                'Crescimento Agressivo (+15%)',
+                conta.saldo,
+                (conta.receitaMensal + receitaExtra) * 1.15,
+                conta.despesaMensal + despesaExtra
+            );
+
+            const cenariosParaSimular = [cenarioPadrao, cenarioContencao, cenarioCrescimento];
+
+            // 3. AVALIAÇÃO PURA
+            // O avaliador agora apenas calcula, sem lógica interna de criação de cenário.
+            const resultados = await Promise.resolve(
+                avaliador.compararCenarios(contaBase, cenariosParaSimular, 12) // Projetando para 12 meses
+            );
+
+            // 4. ORDENAÇÃO E ATUALIZAÇÃO DO ESTADO
+            // Ordenar por maior variação positiva (melhor impacto)
+            resultados.sort((a, b) => b.variacao - a.variacao);
 
             setSimulacoes(resultados);
+
         } catch (e: any) {
             setError(e.message || 'Erro ao executar simulação.');
             setSimulacoes([]);
@@ -92,13 +120,13 @@ export const Simulator: React.FC<SimulatorProps> = ({ conta }) => {
                 <div className="simulacoes-list">
                     {simulacoes.map((sim, idx) => {
                         const isTopImpact = idx === 0;
-                        const cor = isTopImpact ? '#ffb300' : '#757575'; // Dourado para o melhor, cinza para os outros
+                        const cor = isTopImpact ? '#4caf50' : '#757575'; // Verde para o melhor, cinza para os outros
 
                         return (
                             <div key={idx} className={`sim-item ${isTopImpact ? 'top-impacto' : ''}`} style={{ borderLeft: `4px solid ${cor}` }}>
                                 <strong>{sim.nome}</strong>
                                 <p>{sim.descricao}</p>
-                                <small>Score Final (em 24 meses): {sim.scoreFinal.toFixed(2)}</small>
+                                <small>Variação no Saldo (em 12 meses): R$ {sim.variacao.toFixed(2)}</small>
                             </div>
                         );
                     })}
@@ -144,7 +172,7 @@ export const Simulator: React.FC<SimulatorProps> = ({ conta }) => {
                     padding: 12px 16px;
                 }
                 .sim-item.top-impacto {
-                    background-color: #fffde7;
+                    background-color: #e8f5e9; /* Verde claro */
                 }
                 .sim-item strong {
                     font-size: 1.1rem;
