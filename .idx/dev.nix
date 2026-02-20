@@ -29,7 +29,10 @@
       };
       
       # Comandos a serem executados na inicialização do workspace.
-      onStart = {};
+      onStart = {
+        # Garante que as dependências estejam sempre instaladas.
+        pnpm-install = "pnpm install";
+      };
     };
 
     # Configuração da pré-visualização (preview).
