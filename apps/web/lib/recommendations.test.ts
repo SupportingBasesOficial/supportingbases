@@ -1,13 +1,18 @@
 
 import { ContaFinanceira } from "../../../packages/core-engine/src/domain/entities/ContaFinanceira";
 import { getRecomendacoesUsuario } from "./recommendations";
+import { Despesa, TipoDespesa } from "../../../packages/core-engine/src/domain/entities/Despesa";
+import { v4 as uuidv4 } from 'uuid';
 
 describe('Camada de Integração de Recomendações', () => {
-  it('deve retornar recomendações ordenadas por impacto', () => {
+  it('deve retornar recomendações ordenadas por impacto', async () => {
     // Mock de uma ContaFinanceira com despesas altas
-    const mockConta = new ContaFinanceira('Teste Integração', 10000, 5000, 4800);
+    const despesas = [
+      new Despesa(uuidv4(), 'Gasto Elevado 1', 4800, TipoDespesa.VARIAVEL_NAO_ESSENCIAL, 'Lazer'),
+    ];
+    const mockConta = new ContaFinanceira(10000, despesas, 5000);
 
-    const recomendacoes = getRecomendacoesUsuario(mockConta);
+    const recomendacoes = await getRecomendacoesUsuario(mockConta);
 
     // 1. Deve retornar um array com pelo menos uma recomendação
     expect(recomendacoes.length).toBeGreaterThan(0);

@@ -24,10 +24,10 @@ function setup() {
 }
 
 describe('MotorDeRecomendacao', () => {
-  it('deve recomendar o melhor cenário com base na situação financeira', () => {
+  it('deve recomendar o melhor cenário com base na situação financeira', async () => {
     const { motor, conta } = setup();
 
-    const recomendacao = motor.recomendarMelhorCenario(conta);
+    const recomendacao = await motor.recomendarMelhorCenario(conta);
 
     expect(recomendacao).toBeDefined();
     expect(recomendacao).toHaveProperty('id');
@@ -37,17 +37,17 @@ describe('MotorDeRecomendacao', () => {
     expect(typeof recomendacao.scoreFinal).toBe('number');
   });
 
-  it('deve retornar uma lista de cenários recomendados ordenados por score', () => {
+  it('deve retornar uma lista de cenários recomendados ordenados por score', async () => {
     const { motor, conta } = setup();
 
-    const recomendacoes = motor.recomendarTodosOsCenarios(conta);
+    const recomendacoes = await motor.recomendarTodosOsCenarios(conta);
 
     expect(recomendacoes).toBeInstanceOf(Array);
     expect(recomendacoes.length).toBeGreaterThan(0);
     expect(recomendacoes[0].scoreFinal).toBeGreaterThanOrEqual(recomendacoes[recomendacoes.length - 1].scoreFinal);
   });
 
-  it('deve ajustar o score da recomendação com base nos insights do histórico', () => {
+  it('deve ajustar o score da recomendação com base nos insights do histórico', async () => {
     const { motor, conta, servicoHistoricoMock } = setup();
 
     servicoHistoricoMock.gerarInsightsAdaptativos.mockReturnValue([
@@ -57,7 +57,7 @@ describe('MotorDeRecomendacao', () => {
       },
     ]);
 
-    const recomendacoes = motor.recomendarTodosOsCenarios(conta);
+    const recomendacoes = await motor.recomendarTodosOsCenarios(conta);
 
     expect(recomendacoes.length).toBeGreaterThan(0);
     expect(servicoHistoricoMock.gerarInsightsAdaptativos).toHaveBeenCalled();

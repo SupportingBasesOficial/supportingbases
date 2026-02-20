@@ -3,112 +3,103 @@ import { ContaFinanceira } from '../entities/ContaFinanceira';
 import { MotorDeRecomendacao } from './MotorDeRecomendacao';
 import { ServicoDeAlertas } from './ServicoDeAlertas';
 import { ServicoHistorico } from './ServicoHistorico';
-import { Despesa, TipoDespesa } from '../entities/Despesa';
-import { Cenario, Recomendacao } from '../../application/use-cases/GerarRecomendacoes';
 
-// Mock UUID para garantir IDs determinísticos nos testes
-jest.mock('uuid', () => ({
-  v4: () => 'mock-uuid-1234',
-}));
+jest.mock('uuid', () => ({ v4: () => 'mock-uuid-1234' }));
 
-// Mock completo das dependências
 const motorDeRecomendacaoMock = {
-  gerarRecomendacoes: jest.fn(),
-} as unknown as MotorDeRecomendacao;
+  recomendarTodosOsCenarios: jest.fn(),
+} as unknown as jest.Mocked<MotorDeRecomendacao>;
 
 const servicoHistoricoMock = {
   registrar: jest.fn(),
-} as unknown as ServicoHistorico;
+  obterHistorico: jest.fn(),
+  gerarInsightsAdaptativos: jest.fn().mockReturnValue([]), 
+} as unknown as jest.Mocked<ServicoHistorico>;
 
 describe('ServicoDeAlertas', () => {
   let servico: ServicoDeAlertas;
+  let contaMock: ContaFinanceira;
 
   beforeEach(() => {
-    // Resetar mocks antes de cada teste
     jest.clearAllMocks();
     servico = new ServicoDeAlertas(motorDeRecomendacaoMock, servicoHistoricoMock);
+    contaMock = new ContaFinanceira(10000, [], 20000);
   });
 
-  it('deve retornar um array vazio se não houver problemas financeiros nem recomendações', () => {
-    const contaMock = new ContaFinanceira(10000, [], 50000); // Conta saudável
-    motorDeRecomendacaoMock.gerarRecomendacoes = jest.fn().mockReturnValue({ recomendacoes: [] });
-
-    const alertas = servico.gerarAlertas(contaMock);
-    expect(alertas).toEqual([]);
-  });
-
-  it('deve gerar apenas alertas clássicos (ex: BaixoFluxoDeCaixa) se não houver recomendações', () => {
-    const despesas = [new Despesa('1', 'Custo Fixo', 11000, TipoDespesa.ESTRUTURAL_FIXA, 'Geral')];
-    const contaMock = new ContaFinanceira(10000, despesas, 50000); // Fluxo de caixa negativo
-    motorDeRecomendacaoMock.gerarRecomendacoes = jest.fn().mockReturnValue({ recomendacoes: [] });
-
-    const alertas = servico.gerarAlertas(contaMock);
-    expect(alertas.length).toBe(1);
-    expect(alertas[0].tipo).toBe('BaixoFluxoDeCaixa');
-  });
-
-  it('deve gerar um alerta de OPORTUNIDADE com base nas recomendações do motor', () => {
-    const contaMock = new ContaFinanceira(10000, [], 50000); // Conta saudável
-    const recomendacaoOportunidade: Recomendacao = {
-      estrategia: 'Aumento de Renda Moderado',
-      descricao: 'Descrição da oportunidade',
-      score: 98,
-      tipo: 'oportunidade',
-      impactoEstimado: 100
+  it('deve gerar um alerta de RISCO para recomendação com score baixo', () => {
+    const recomendacaoRisco = {
+      id: 'reduzir-despesas',
+      estrategia: 'Redução de Despesas',
+      descricao: 'Cortar gastos para evitar dívidas',
+      scoreFinal: 40,
+      impactoEstimado: 300,
+      prioridade: 1,
+      risco: 'alto' as const
     };
-
-    motorDeRecomendacaoMock.gerarRecomendacoes = jest.fn().mockReturnValue({ 
-        recomendacoes: [recomendacaoOportunidade] 
-    });
+    motorDeRecomendacaoMock.recomendarTodosOsCenarios.mockReturnValue([recomendacaoRisco]);
 
     const alertas = servico.gerarAlertas(contaMock);
 
-    expect(alertas.length).toBe(1);
-    expect(alertas[0].tipo).toBe('oportunidade');
-    expect(alertas[0].titulo).toContain('Oportunidade Encontrada');
-  });
-
-  it('deve gerar um alerta de RISCO com base nas recomendações do motor', () => {
-    const contaMock = new ContaFinanceira(10000, [], 50000); // Conta saudável
-    const recomendacaoRisco: Recomendacao = {
-        estrategia: 'Alto Risco de Dívida',
-        descricao: 'Descrição do risco',
-        score: 30,
-        tipo: 'risco',
-        impactoEstimado: -200
-    };
-
-    motorDeRecomendacaoMock.gerarRecomendacoes = jest.fn().mockReturnValue({ 
-        recomendacoes: [recomendacaoRisco] 
-    });
-
-    const alertas = servico.gerarAlertas(contaMock);
-
-    expect(alertas.length).toBe(1);
+    expect(alertas).toHaveLength(1);
     expect(alertas[0].tipo).toBe('risco');
     expect(alertas[0].titulo).toContain('Risco Detectado');
   });
 
-  it('deve combinar alertas clássicos e alertas de recomendação quando ambos existirem', () => {
-    const despesas = [new Despesa('1', 'Custo Fixo', 11000, TipoDespesa.ESTRUTURAL_FIXA, 'Geral')];
-    const contaMock = new ContaFinanceira(10000, despesas, 10000); // Baixo fluxo de caixa E baixo nível de reserva
-    
-    const recomendacaoRisco: Recomendacao = {
-        estrategia: 'Alto Risco de Dívida',
-        descricao: 'Descrição do risco',
-        score: 30,
-        tipo: 'risco',
-        impactoEstimado: -200
+  it('deve gerar um alerta de OPORTUNIDADE para recomendação com score alto', () => {
+    const recomendacaoOportunidade = {
+      id: 'investir-mais',
+      estrategia: 'Aumentar Investimentos',
+      descricao: 'Aproveitar sobra de caixa para investir',
+      scoreFinal: 90, 
+      impactoEstimado: 1500,
+      prioridade: 2,
+      risco: 'baixo' as const
     };
-    motorDeRecomendacaoMock.gerarRecomendacoes = jest.fn().mockReturnValue({ 
-        recomendacoes: [recomendacaoRisco] 
-    });
+    motorDeRecomendacaoMock.recomendarTodosOsCenarios.mockReturnValue([recomendacaoOportunidade]);
 
     const alertas = servico.gerarAlertas(contaMock);
 
-    expect(alertas.length).toBe(3); // BaixoFluxoDeCaixa, BaixoNivelDeReserva, Risco
-    expect(alertas.some(a => a.tipo === 'BaixoFluxoDeCaixa')).toBe(true);
-    expect(alertas.some(a => a.tipo === 'BaixoNivelDeReserva')).toBe(true);
-    expect(alertas.some(a => a.tipo === 'risco')).toBe(true);
+    expect(alertas).toHaveLength(1);
+    expect(alertas[0].tipo).toBe('oportunidade');
+    expect(alertas[0].titulo).toContain('Oportunidade Encontrada');
+  });
+
+  it('NÃO deve gerar alertas para recomendação com score intermediário', () => {
+    const recomendacaoInformativa = {
+      id: 'manter-orcamento',
+      estrategia: 'Manter Orçamento Atual',
+      descricao: 'Situação financeira estável',
+      scoreFinal: 70, 
+      impactoEstimado: 0,
+      prioridade: 3,
+      risco: 'baixo' as const // Usando um valor válido, mesmo que o alerta não seja gerado
+    };
+    motorDeRecomendacaoMock.recomendarTodosOsCenarios.mockReturnValue([recomendacaoInformativa]);
+
+    const alertas = servico.gerarAlertas(contaMock);
+    expect(alertas).toHaveLength(0);
+  });
+
+  it('deve incluir alerta de saldo baixo quando aplicável', () => {
+    const contaComSaldoBaixo = new ContaFinanceira(500, [], 900); 
+    motorDeRecomendacaoMock.recomendarTodosOsCenarios.mockReturnValue([]); 
+
+    const alertas = servico.gerarAlertas(contaComSaldoBaixo);
+
+    expect(alertas).toHaveLength(1);
+    expect(alertas[0].tipo).toBe('informativo');
+    expect(alertas[0].titulo).toBe('Informativo: Saldo Baixo');
+  });
+
+  it('deve ordenar os alertas por impacto estimado', () => {
+    const rec1 = { id: 'rec1', estrategia: 'Risco Alto', scoreFinal: 30, impactoEstimado: 70, descricao:'', prioridade:1, risco: 'alto' as const }; 
+    const rec2 = { id: 'rec2', estrategia: 'Oportunidade Baixa', scoreFinal: 85, impactoEstimado: 85, descricao:'', prioridade:1, risco: 'baixo' as const };
+    motorDeRecomendacaoMock.recomendarTodosOsCenarios.mockReturnValue([rec1, rec2]);
+
+    const alertas = servico.gerarAlertas(contaMock);
+    
+    expect(alertas).toHaveLength(2);
+    expect(alertas[0].tipo).toBe('oportunidade');
+    expect(alertas[1].tipo).toBe('risco');
   });
 });
